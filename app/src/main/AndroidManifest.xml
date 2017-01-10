@@ -17,14 +17,14 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".RxJavaActivity"></activity>
         <activity android:name=".RetrofitActivity">
-
-        </activity>
-        <activity android:name=".OkHttpActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".OkHttpActivity">
+
         </activity>
     </application>
 

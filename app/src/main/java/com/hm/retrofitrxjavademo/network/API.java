@@ -1,6 +1,8 @@
 package com.hm.retrofitrxjavademo.network;
 
 
+import com.hm.retrofitrxjavademo.model.HttpResult;
+import com.hm.retrofitrxjavademo.model.MovieEntity;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 
 import java.util.Map;
@@ -20,5 +22,12 @@ public interface API {
 
     @GET("/")
     Observable<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map);
+
+    @GET("/")
+    Observable<HttpResult<NowWeatherBean>> testNowWeather(@QueryMap Map<String, Object> map);
+
+    @GET("https://api.douban.com/v2/movie/top250")
+    Observable<MovieEntity> getTopMovie(@Query("start") int start, @Query("count") int count);
+
 }
 
