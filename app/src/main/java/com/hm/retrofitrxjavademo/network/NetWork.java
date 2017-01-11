@@ -36,6 +36,8 @@ public class NetWork {
     private static final long CACHE_SIZE = 100 * 1024 * 1024;
     private static API api;
     private static OkHttpClient okHttpClient;
+    private static OkHttpClient dpwnLoadHttpClient;
+
     //private static final String BASE_URL = "https://api.heweather.com/x3/";
 
     private static final String BASE_URL = "http://api.k780.com:88";
@@ -159,7 +161,7 @@ public class NetWork {
             Response originalResponse = chain.proceed(request);
             BufferedSource source = originalResponse.body().source();
             source.request(Long.MAX_VALUE);//不加这句打印不出来
-            Log.e(tag, "response" + source.buffer().clone().readUtf8());
+//            Log.e(tag, "response" + source.buffer().clone().readUtf8());
             // Log.e(tag, "request response" + originalResponse.body().string());
             Response response;
             if (NetWorkUtil.isConnected()) {
