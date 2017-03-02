@@ -4,7 +4,7 @@
     android:id="@+id/activity_rx_java"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hm.retrofitrxjavademo.RxJavaActivity">
+    tools:context=".ui.activity.RxJavaActivity">
 
     <ProgressBar
         android:id="@+id/progress_bar"

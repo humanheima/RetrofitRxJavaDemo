@@ -1,4 +1,4 @@
-package com.hm.retrofitrxjavademo.network;
+package com.hm.retrofitrxjavademo.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

@@ -1,9 +1,11 @@
-package com.hm.retrofitrxjavademo;
+package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import com.hm.retrofitrxjavademo.R;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
