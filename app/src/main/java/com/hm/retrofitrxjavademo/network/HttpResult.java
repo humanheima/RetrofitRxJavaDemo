@@ -1,4 +1,4 @@
-package com.hm.retrofitrxjavademo.model;
+package com.hm.retrofitrxjavademo.network;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
  *
  * @param <T>
  */
+
 public class HttpResult<T> {
 
     public int resultCode;

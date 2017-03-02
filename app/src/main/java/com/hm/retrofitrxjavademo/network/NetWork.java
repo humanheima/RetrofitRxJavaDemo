@@ -3,7 +3,7 @@ package com.hm.retrofitrxjavademo.network;
 import android.util.Log;
 
 import com.hm.retrofitrxjavademo.App;
-import com.hm.retrofitrxjavademo.model.HttpResult;
+import com.hm.retrofitrxjavademo.util.NetWorkUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Subscriber;
 
-import static com.hm.retrofitrxjavademo.RxJavaActivity.tag;
+import static com.hm.retrofitrxjavademo.ui.activity.RxJavaActivity.tag;
 
 /**
  * Created by Administrator on 2016/9/9.
@@ -35,12 +35,13 @@ public class NetWork {
 
     private static final long CACHE_SIZE = 100 * 1024 * 1024;
     private static API api;
+    private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
-    private static OkHttpClient dpwnLoadHttpClient;
 
     //private static final String BASE_URL = "https://api.heweather.com/x3/";
 
     private static final String BASE_URL = "http://api.k780.com:88";
+    private static final String UPLOAD_FILE_BASE_URL = "http://api.k780.com:88";
 
     public static API getApi() {
         if (api == null) {
@@ -54,6 +55,20 @@ public class NetWork {
             api = retrofit.create(API.class);
         }
         return api;
+    }
+
+    public static UpLoadFileApi getUpLoadFileApi() {
+        if (upLoadFileApi == null) {
+            initClient();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .client(okHttpClient)
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .build();
+            upLoadFileApi = retrofit.create(UpLoadFileApi.class);
+        }
+        return upLoadFileApi;
     }
 
     /**

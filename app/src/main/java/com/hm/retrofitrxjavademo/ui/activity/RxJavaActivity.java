@@ -1,4 +1,4 @@
-package com.hm.retrofitrxjavademo;
+package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.model.Animal;
 import com.hm.retrofitrxjavademo.model.Dog;
 

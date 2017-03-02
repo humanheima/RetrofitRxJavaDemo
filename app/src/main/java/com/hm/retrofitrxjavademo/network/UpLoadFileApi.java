@@ -1,6 +1,27 @@
-#RetrofitRxJavaDemo
-####上传文件，接口定义。
+package com.hm.retrofitrxjavademo.network;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
+import rx.Observable;
+
+/**
+ * Created by dumingwei on 2017/3/2.
+ */
+public interface UpLoadFileApi {
+
+    // TODO: 2017/3/2 这个方法如何改进呢？
+    @Multipart
+    @POST("http://ylbook.xun-ao.com/api/upload.php")
+    Observable<ResponseBody> uploadFile(@Part("file[]") File file);
 
     //上传单个文件
     @Multipart
@@ -27,9 +48,4 @@
     @POST("upload")
     Observable<String> uploadManyFile(@PartMap Map<String, RequestBody> map);
 
-
-RequestBody和MultipartBody.Part的区别
-
-    	RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        // MultipartBody.Part is used to send also the actual file name
-        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
+}

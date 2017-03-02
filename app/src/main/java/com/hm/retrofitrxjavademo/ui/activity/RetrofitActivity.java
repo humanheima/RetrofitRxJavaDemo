@@ -1,4 +1,4 @@
-package com.hm.retrofitrxjavademo;
+package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -13,12 +13,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.download.DownLoadProgressListener;
 import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
-import com.hm.retrofitrxjavademo.model.HttpResult;
+import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.model.MovieEntity;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.NetWork;
@@ -183,7 +184,7 @@ public class RetrofitActivity extends AppCompatActivity {
         String descriptionString = "hello, 这是文件描述";
         RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
 
-        NetWork.getApi().uploadSingleFile(description, body)
+        NetWork.getUpLoadFileApi().uploadSingleFile(description, body)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<String>() {
@@ -215,7 +216,7 @@ public class RetrofitActivity extends AppCompatActivity {
         String descriptionString = "hello, 这是文件描述";
         RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
 
-        NetWork.getApi().uploadSingleFile(description, body)
+        NetWork.getUpLoadFileApi().uploadSingleFile(description, body)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<String>() {
@@ -247,7 +248,7 @@ public class RetrofitActivity extends AppCompatActivity {
         requestBodyMap.put("file1", requestBody1);
         requestBodyMap.put("file2", requestBody2);
 
-        NetWork.getApi().uploadManyFile(requestBodyMap)
+        NetWork.getUpLoadFileApi().uploadManyFile(requestBodyMap)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<String>() {
