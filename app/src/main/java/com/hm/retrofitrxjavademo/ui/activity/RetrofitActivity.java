@@ -1,6 +1,7 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,9 +20,9 @@ import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
-import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.model.MovieEntity;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
+import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
 
@@ -77,7 +78,6 @@ public class RetrofitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_retrofit);
         ButterKnife.bind(this);
         loadingDialog = new LoadingDialog(this);
-
     }
 
     @OnClick(R.id.btn_now_weather)
@@ -271,7 +271,6 @@ public class RetrofitActivity extends AppCompatActivity {
 
     }
 
-
     private void downLoadWeChat(String downLoadUrl) {
         NetWork.getApi().downloadFile(downLoadUrl)
                 .subscribeOn(Schedulers.io())
@@ -309,27 +308,30 @@ public class RetrofitActivity extends AppCompatActivity {
     private File downLoadFile;
 
     private void retrofitDownload() {
-        downLoadFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "wanfeng.apk");
+        downLoadFile = createImageFile();
         dialog = new ProgressDialog(this);
         dialog.setProgressNumberFormat("%1d KB %2d KB");
         dialog.setTitle("下载");
         dialog.setMessage("正在下载，请稍后...");
         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         dialog.setCancelable(true);
-
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
 
         progressBean = new ProgressBean();
 
         mProgressHandler = new ProgressHandler(Looper.getMainLooper()) {
             @Override
             protected void handleProgressMessage(long bytesRead, long contentLength, boolean done) {
-                Log.e("是否在主线程中运行", String.valueOf(Looper.getMainLooper() == Looper.myLooper()));
                 Log.e("handleProgressMessage", String.format("%d%% done\n", (100 * bytesRead) / contentLength));
                 Log.e("done", "--->" + String.valueOf(done));
                 dialog.setMax((int) (contentLength / 1024));
                 dialog.setProgress((int) (bytesRead / 1024));
                 if (done) {
-                    //dialog.dismiss();
                     dialog.setMessage("下载成功");
                 }
             }
@@ -368,7 +370,7 @@ public class RetrofitActivity extends AppCompatActivity {
                 .create(DownloadApi.class);
 
         dialog.show();
-        downloadApi.downLoad()
+        downloadApi.downLoad(null)
                 .subscribeOn(Schedulers.io())//不能在主线程下载
                 .subscribe(new Subscriber<ResponseBody>() {
                     @Override
@@ -397,6 +399,21 @@ public class RetrofitActivity extends AppCompatActivity {
                 });
     }
 
+    public File createImageFile() {
+        File file = null;
+        File dir;
+        try {
+            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath());
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            file = File.createTempFile("download", ".apk", dir);
+            Log.e("createImageFile", file.getAbsolutePath());
+        } catch (IOException e) {
+            Log.e("createImageFile", e.getMessage());
+        }
+        return file;
+    }
 
     private void installApk(File file) {
         Intent intent = new Intent();
@@ -436,22 +453,13 @@ public class RetrofitActivity extends AppCompatActivity {
                 bo.write(buffer, 0, len);
                 bo.flush();
             }
+            bis.close();
+            bo.close();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("saveToDisk", "saveToDisk error" + e.getMessage());
             return false;
-        } finally {
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-                if (bo != null) {
-                    bo.close();
-                }
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
         }
     }
-
 }
