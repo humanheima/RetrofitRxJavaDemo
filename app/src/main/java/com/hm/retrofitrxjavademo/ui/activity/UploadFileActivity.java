@@ -2,7 +2,6 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
@@ -13,11 +12,10 @@ import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 import java.io.File;
 
 import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 public class UploadFileActivity extends BaseActivity {
 
@@ -54,16 +52,7 @@ public class UploadFileActivity extends BaseActivity {
         NetWork.getUpLoadFileApi().uploadFile(requestBody)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<String>() {
-                    @Override
-                    public void call(String s) {
-                        Log.e(TAG, "upLoadFile success" + s);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.e(TAG, "upLoadFile error:" + throwable.getMessage());
-                    }
-                });
+                .subscribe(s -> Log.e(TAG, s),
+                        throwable -> Log.e(TAG, "upLoadFile error:" + throwable.getMessage()));
     }
 }

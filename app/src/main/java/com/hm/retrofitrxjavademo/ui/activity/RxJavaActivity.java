@@ -19,24 +19,27 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Action4;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.functions.Func2;
-import rx.observables.GroupedObservable;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.observables.GroupedObservable;
+import io.reactivex.schedulers.Schedulers;
 
-import static rx.Observable.just;
+import static io.reactivex.Observable.just;
 
 public class RxJavaActivity extends AppCompatActivity {
 
@@ -76,26 +79,11 @@ public class RxJavaActivity extends AppCompatActivity {
     }
 
     private void useStart() {
-
-        Observable
-                .just(1, 2, 4)
-                .startWith(Observable.just(9, 8, 7))
-                .subscribe(new Subscriber<Integer>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.e(tag, "useStart onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(tag, "useStart onError");
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
-                        Log.e(tag, "useStart:" + integer);
-                    }
-                });
+        just(1, 2, 4)
+                .startWith(just(9, 8, 7))
+                .subscribe(integer -> Log.e(tag, "useStart:" + integer),
+                        e -> Log.e(tag, "useStart onError"),
+                        () -> Log.e(tag, "useStart onCompleted"));
         //输出结果
         /**
          useStart:9
@@ -105,29 +93,15 @@ public class RxJavaActivity extends AppCompatActivity {
          useStart:2
          useStart:4
          useStart onCompleted
-
          */
     }
 
     public void never() {
         Observable
                 .never()
-                .subscribe(new Subscriber<Object>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.e(tag, "never onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(tag, "never onError");
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        Log.e(tag, "never onNext");
-                    }
-                });
+                .subscribe(object -> Log.e(tag, "useStart:" + object.toString()),
+                        e -> Log.e(tag, "useStart onError"),
+                        () -> Log.e(tag, "useStart onCompleted"));
         //什么也不输出
     }
 
@@ -135,23 +109,9 @@ public class RxJavaActivity extends AppCompatActivity {
     public void useError() {
         Observable
                 .error(new Throwable("使用error"))
-                .subscribe(new Subscriber<Object>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.e(tag, "onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(tag, "useError onError");
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        Log.e(tag, "useError onNext");
-                    }
-                });
-
+                .subscribe(o -> Log.e(tag, "useError onNext"),
+                        e -> Log.e(tag, "useError onError"),
+                        () -> Log.e(tag, "onCompleted"));
         //输出 useError onError
     }
 
@@ -184,53 +144,21 @@ public class RxJavaActivity extends AppCompatActivity {
         List<List> listList = new ArrayList<>();
         listList.add(integerList1);
         listList.add(integerList2);
-        Observable.from(listList)
-                .map(new Func1<List, List<Integer>>() {
-                    @Override
-                    public List<Integer> call(List list) {
-                        return list;
-                    }
-                }).subscribe(new Action1<List<Integer>>() {
-            @Override
-            public void call(List<Integer> strings) {
-                for (Integer integer : strings) {
-                    Log.e(tag, "map" + integer);
-                }
-            }
-        });
 
-        Observable.from(listList)
-                .flatMap(new Func1<List, Observable<Integer>>() {
-                    @Override
-                    public Observable<Integer> call(List list) {
-                        return Observable.from(list);
-                    }
-                }).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer s) {
-                Log.e(tag, "flatMap" + s);
-            }
-        });
-
-
+        Observable.fromIterable(listList)
+                .flatMap(list -> Observable.fromIterable(list))
+                .subscribe(i -> Log.e(tag, "flatMap" + i));
     }
 
     private void flatMapIterable() {
         just(1, 2, 3, 5)
-                .flatMapIterable(new Func1<Integer, Iterable<Integer>>() {
-                    @Override
-                    public Iterable<Integer> call(Integer integer) {
-                        List<Integer> integerList = new ArrayList<Integer>();
-                        integer = integer + 100;
-                        integerList.add(integer);
-                        return integerList;
-                    }
-                }).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                Log.e(tag, "flatMapIterable" + integer);
-            }
-        });
+                .flatMapIterable(integer -> {
+                    List<Integer> integerList = new ArrayList<>();
+                    integer = integer + 100;
+                    integerList.add(integer);
+                    return integerList;
+                })
+                .subscribe(integer -> Log.e(tag, "flatMapIterable" + integer));
     }
 
 
@@ -246,22 +174,10 @@ public class RxJavaActivity extends AppCompatActivity {
         // Observable<File> fileObservable = listFiles(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM));
         Observable<File> fileObservable = listFiles(new File("hehe"));
 
-        fileObservable.subscribe(new Subscriber<File>() {
-            @Override
-            public void onCompleted() {
-                Log.e(tag, "onCompleted");
-            }
+        fileObservable
+                .subscribe(file -> Log.e(tag, file.getPath() + file.getName()),
+                        e -> Log.e(tag, "onError:" + e.getMessage()));
 
-            @Override
-            public void onError(Throwable e) {
-                Log.e(tag, "onError:" + e.getMessage());
-            }
-
-            @Override
-            public void onNext(File file) {
-                Log.e(tag, file.getPath() + file.getName());
-            }
-        });
     }
 
     private Observable<File> listFiles(File f) {
@@ -269,12 +185,8 @@ public class RxJavaActivity extends AppCompatActivity {
             return Observable.error(new Throwable("指定目录不存在！"));
         } else {
             if (f.isDirectory()) {
-                return Observable.from(f.listFiles()).concatMap(new Func1<File, Observable<? extends File>>() {
-                    @Override
-                    public Observable<? extends File> call(File file) {
-                        return listFiles(file);
-                    }
-                });
+                return Observable.fromArray(f.listFiles())
+                        .concatMap(this::listFiles);
             } else {
                 return just(f);
             }
@@ -282,91 +194,36 @@ public class RxJavaActivity extends AppCompatActivity {
     }
 
     private void repeatWhen() {
-        Observable.range(3, 3).repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
-            @Override
-            public Observable<?> call(Observable<? extends Void> observable) {
-                return observable.zipWith(Observable.range(1, 3), new Func2<Void, Integer, Integer>() {
-                    @Override
-                    public Integer call(Void aVoid, Integer integer) {
-                        return integer;
-                    }
-                }).flatMap(new Func1<Integer, Observable<?>>() {
-                    @Override
-                    public Observable<?> call(Integer integer) {
-                        Log.e(tag, "delay repeat the " + integer + " count");
-                        //1秒钟重复一次
-                        return Observable.timer(1, TimeUnit.SECONDS);
-                    }
-                });
-            }
-        }).subscribe(new Subscriber<Integer>() {
-            @Override
-            public void onCompleted() {
-                Log.e(tag, "onCompleted");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e(tag, "onError:" + e.getMessage());
-            }
-
-            @Override
-            public void onNext(Integer integer) {
-                Log.e(tag, "onNext" + integer);
-            }
-        });
+        Observable.range(3, 3)
+                .repeatWhen(objectObservable -> objectObservable.zipWith(Observable.range(1, 3), (o, integer) -> integer))
+                .flatMap(integer -> {
+                    Log.e(tag, "delay repeat the " + integer + " count");
+                    //1秒钟重复一次
+                    return Observable.timer(1, TimeUnit.SECONDS);
+                })
+                .subscribe(integer -> Log.e(tag, "onNext" + integer),
+                        e -> Log.e(tag, e.getMessage()));
     }
 
     private void retryWhen() {
-        Observable.create(new Observable.OnSubscribe<String>() {
-            @Override
-            public void call(Subscriber<? super String> subscriber) {
-                subscriber.onError(new RuntimeException("always fails"));
-            }
-        })
-                .retryWhen(new Func1<Observable<? extends Throwable>, Observable<?>>() {
-                    @Override
-                    public Observable<?> call(Observable<? extends Throwable> errors) {
-                        return errors.zipWith(Observable.range(1, 3), new Func2<Throwable, Integer, Integer>() {
-                            @Override
-                            public Integer call(Throwable throwable, Integer integer) {
-                                return integer;
-                            }
-                        }).flatMap(new Func1<Integer, Observable<?>>() {
-                            @Override
-                            public Observable<?> call(Integer integer) {
-                                Log.e(tag, "delay retryWhen the " + integer + " count");
-                                //i秒钟重复一次
-                                return Observable.timer(integer, TimeUnit.SECONDS);
-                            }
-                        });
-                    }
-                })
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.e(tag, "onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(tag, "onError:" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                        Log.e(tag, "onNext:" + s);
-                    }
-                });
-
-
+        Observable.create((ObservableEmitter<String> e) ->
+                e.onError(new RuntimeException("always fails")))
+                .retryWhen(throwableObservable ->
+                        throwableObservable.zipWith(Observable.range(1, 3), (t, integer) -> integer)
+                                .flatMap(integer -> {
+                                    Log.e(tag, "delay retryWhen the " + integer + " count");
+                                    //i秒钟重复一次
+                                    return Observable.timer(integer, TimeUnit.SECONDS);
+                                }))
+                .subscribe(s -> Log.e(tag, "onNext:" + s),
+                        e -> Log.e(tag, "onError:" + e));
     }
 
-    private void retry() {
-        /**
-         * ②. retry(count)
-         *     最多2次尝试重新订阅
-         */
+   /* private void retry() {
+        *//**
+     * ②. retry(count)
+     *     最多2次尝试重新订阅
+     *//*
         Observable.create(new Observable.OnSubscribe<Integer>() {
             @Override
             public void call(Subscriber<? super Integer> subscriber) {
@@ -397,9 +254,11 @@ public class RxJavaActivity extends AppCompatActivity {
                     }
                 });
 
-        /**
-         * ③. retry(Func2)
-         */
+        */
+
+    /**
+     * ③. retry(Func2)
+     *//*
         Observable.create(new Observable.OnSubscribe<Integer>() {
             @Override
             public void call(Subscriber<? super Integer> subscriber) {
@@ -439,63 +298,9 @@ public class RxJavaActivity extends AppCompatActivity {
             }
         });
 
-    }
-
+    }*/
     public void repeat() {
-
-        just(1, 2, 3, 4).repeat(2).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                Log.e(tag, "repeat" + integer);
-            }
-        });
-
-       /* Observable.just(1, 2, 3, 4).repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
-            @Override
-            public Observable<?> call(Observable<? extends Void> observable) {
-                return null;
-            }
-        }).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-
-            }
-        });*/
-
-
-      /*  Observable.range(3, 3).repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
-            @Override
-            public Observable<?> call(Observable<? extends Void> observable) {
-                return observable.zipWith(Observable.range(1, 3), new Func2<Void, Integer, Integer>() {
-                    @Override
-                    public Integer call(Void aVoid, Integer integer) {
-                        return integer;
-                    }
-                }).flatMap(new Func1<Integer, Observable<?>>() {
-                    @Override
-                    public Observable<?> call(Integer integer) {
-                        Log.e(tag, "delay repeat the " + integer + " count");
-                        //1秒钟重复一次
-                        return Observable.timer(1, TimeUnit.SECONDS);
-                    }
-                });
-            }
-        }).subscribe(new Subscriber<Integer>() {
-            @Override
-            public void onCompleted() {
-                Log.e(tag, "onCompleted");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Integer integer) {
-                Log.e(tag, "onNext" + integer);
-            }
-        });*/
+        just(1, 2, 3, 4).repeat(2).subscribe(s -> Log.e(tag, "repeat" + s));
     }
 
     /**
@@ -511,9 +316,14 @@ public class RxJavaActivity extends AppCompatActivity {
     private void fun1() {
 
         //1 创建观察者的两种方式
-        Observer<String> observer = new Observer<String>() {
+        Observer<String> stringObserver = new Observer<String>() {
             @Override
-            public void onCompleted() {
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(String value) {
 
             }
 
@@ -523,36 +333,26 @@ public class RxJavaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNext(String s) {
+            public void onComplete() {
 
             }
         };
 
-        Subscriber<String> subscriber = new Subscriber<String>() {
+        Consumer<String> subscriber = new Consumer<String>() {
             @Override
-            public void onCompleted() {
+            public void accept(String s) throws Exception {
 
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(String s) {
-                Log.e("tag", s);
             }
         };
 
         //2 创建被观察者的几种方式
-        Observable observable = Observable.create(new Observable.OnSubscribe<String>() {
+        Observable observable = Observable.create(new ObservableOnSubscribe<String>() {
             @Override
-            public void call(Subscriber<? super String> subscriber) {
+            public void subscribe(ObservableEmitter<String> subscriber) throws Exception {
                 subscriber.onNext("Hello");
                 subscriber.onNext("Hi");
                 subscriber.onNext("Aloha");
-                subscriber.onCompleted();
+                subscriber.onComplete();
             }
         });
         //just(T...): 将传入的参数依次发送出来。
@@ -566,12 +366,12 @@ public class RxJavaActivity extends AppCompatActivity {
          */
         //from(T[]) / from(Iterable<? extends T>) : 将传入的数组或 Iterable 拆分成具体对象后，依次发送出来。
         String[] words = {"Hello", "Hi", "Aloha"};
-        Observable observable2 = Observable.from(words);
+        Observable observable2 = Observable.fromArray(words);
         ArrayList<String> list = new ArrayList<>();
         list.add("hello");
         list.add("Hi");
         list.add("Aloha");
-        Observable observable3 = Observable.from(list);
+        Observable observable3 = Observable.fromIterable(list);
         /**
          * 将会依次调用：
          onNext("Hello");
@@ -585,34 +385,6 @@ public class RxJavaActivity extends AppCompatActivity {
         observable1.subscribe(subscriber);
         observable2.subscribe(subscriber);
         observable3.subscribe(subscriber);
-
-        //subscribe() 还支持不完整定义的回调
-        Action1<String> onNextAction = new Action1<String>() {
-            @Override
-            public void call(String s) {
-                Log.e(tag, s);
-            }
-        };
-        Action1<Throwable> onErrorAction = new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                Log.e(tag, throwable.getMessage());
-            }
-        };
-        Action0 onCompletedAction = new Action0() {
-            @Override
-            public void call() {
-                Log.e(tag, "onCompletedAction");
-            }
-        };
-        Action4<String, String, Integer, List<String>> action4 = new Action4<String, String, Integer, List<String>>() {
-            @Override
-            public void call(String s, String s2, Integer integer, List<String> list) {
-
-            }
-        };
-        // 自动创建 Subscriber ，并使用 onNextAction、 onErrorAction 和 onCompletedAction 来定义 onNext()、 onError() 和 onCompleted()
-        observable.subscribe(onNextAction, onErrorAction, onCompletedAction);
 
     }
 
@@ -640,12 +412,13 @@ public class RxJavaActivity extends AppCompatActivity {
         just(1, 2, 3, 4)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void call(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         Log.e(tag, integer.toString());
                     }
                 });
+
         /**
          * 上面这段代码中，由于 subscribeOn(Schedulers.io()) 的指定，被创建的事件的内容 1、2、3、4 将会在 IO 线程发出；
          * 而由于 observeOn(AndroidScheculers.mainThread()) 的指定，因此 subscriber 数字的打印将发生在主线程 。
@@ -660,30 +433,33 @@ public class RxJavaActivity extends AppCompatActivity {
          */
         final int resId = R.mipmap.ic_launcher;
         final ImageView imageView = new ImageView(this);
-        Observable.create(new Observable.OnSubscribe<Drawable>() {
+        Observable.create(new ObservableOnSubscribe<Drawable>() {
             @Override
-            public void call(Subscriber<? super Drawable> subscriber) {
-
+            public void subscribe(ObservableEmitter<Drawable> e) throws Exception {
                 Drawable drawable = getResources().getDrawable(resId);
-                subscriber.onNext(drawable);
-                subscriber.onCompleted();
+                e.onNext(drawable);
+                e.onComplete();
             }
         }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Drawable>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "onCompleted");
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Drawable value) {
+                        imageView.setImageDrawable(value);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(tag, e.getMessage());
+
                     }
 
                     @Override
-                    public void onNext(Drawable drawable) {
-                        imageView.setImageDrawable(drawable);
+                    public void onComplete() {
+
                     }
                 });
     }
@@ -697,17 +473,17 @@ public class RxJavaActivity extends AppCompatActivity {
         // 而在经过 map() 方法后，事件的参数类型也由 String 转为了 Bitmap。
         final ImageView imageView = new ImageView(this);
         just("images/logo.png")// 输入类型 String
-                .map(new Func1<String, Bitmap>() {
+                .map(new Function<String, Bitmap>() {
                     @Override
-                    public Bitmap call(String filePath) {
-                        return getBitMapFromPath(filePath);
+                    public Bitmap apply(String s) throws Exception {
+                        return getBitMapFromPath(s);
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Bitmap>() {
+                .subscribe(new Consumer<Bitmap>() {
                     @Override
-                    public void call(Bitmap bitmap) {
+                    public void accept(Bitmap bitmap) throws Exception {
                         imageView.setImageBitmap(bitmap);
                     }
                 });
@@ -733,14 +509,9 @@ public class RxJavaActivity extends AppCompatActivity {
      */
 
     public void changeScheduler(View view) {
-        Subscriber<String> subscriber = new Subscriber<String>() {
+        Observer<String> subscriber = new Observer<String>() {
             @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
+            public void onSubscribe(Disposable d) {
 
             }
 
@@ -748,19 +519,29 @@ public class RxJavaActivity extends AppCompatActivity {
             public void onNext(String s) {
                 Log.e(tag, "主线程" + s);
             }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
         };
         just("hello", "world", "hi")
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.newThread())
-                .map(new Func1<String, String>() {
+                .map(new Function<String, String>() {
                     @Override
-                    public String call(String s) {
+                    public String apply(String s) throws Exception {
                         return "新线程1" + s;
                     }
                 }).observeOn(Schedulers.io())
-                .map(new Func1<String, String>() {
+                .map(new Function<String, String>() {
                     @Override
-                    public String call(String s) {
+                    public String apply(String s) throws Exception {
                         return "新线程2" + s;
                     }
                 })
@@ -777,23 +558,24 @@ public class RxJavaActivity extends AppCompatActivity {
     public void useDoOnSubscribe() {
         just(1, 2, 3, 4)
                 .subscribeOn(Schedulers.io())
-                .doOnSubscribe(new Action0() {
+                .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
-                    public void call() {
+                    public void accept(Disposable disposable) throws Exception {
                         progressBar.setVisibility(View.VISIBLE);//需要在主线程执行
                         Log.e(tag, "doOnSubscribe ,thread id" + Thread.currentThread().getId() + ",thread name" + Thread.currentThread().getName());
                     }
                 })
-                .doAfterTerminate(new Action0() {
+                .doAfterTerminate(new Action() {
                     @Override
-                    public void call() {
+                    public void run() throws Exception {
                         Log.e(tag, "doAfterTerminate thread id" + Thread.currentThread().getId() + ",thread name" + Thread.currentThread().getName());
                     }
                 })
+
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void call(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         Log.e(tag, "onNext" + integer + ",thread id" + Thread.currentThread().getId() + ",thread name" + Thread.currentThread().getName());
                     }
                 });
@@ -841,27 +623,20 @@ public class RxJavaActivity extends AppCompatActivity {
     public void compareJustAndDefer() {
         Observable<Integer> justObservable = just(i);
         i = 12;
-        Observable<Integer> deferObservable = Observable.defer(new Func0<Observable<Integer>>() {
+        Observable<Integer> deferObservable = Observable.defer(new Callable<ObservableSource<? extends Integer>>() {
             @Override
-            public Observable<Integer> call() {
+            public ObservableSource<? extends Integer> call() throws Exception {
                 return just(i);
             }
         });
         i = 15;
-        justObservable.subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                //输出结果 10
-                Log.e(tag, "justObservable i=" + integer);
-            }
+        justObservable.subscribe(integer -> {
+            //输出结果 10
+            Log.e(tag, "justObservable i=" + integer);
         });
-
-        deferObservable.subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                //输出结果 15
-                Log.e(tag, "deferObservable i=" + integer);
-            }
+        deferObservable.subscribe(integer -> {
+            //输出结果 15
+            Log.e(tag, "deferObservable i=" + integer);
         });
     }
 
@@ -871,9 +646,9 @@ public class RxJavaActivity extends AppCompatActivity {
      */
     public void delayStartAct() {
         Observable.timer(2, TimeUnit.SECONDS, AndroidSchedulers.mainThread())
-                .map(new Func1<Long, Object>() {
+                .map(new Function<Long, Object>() {
                     @Override
-                    public Object call(Long aLong) {
+                    public Object apply(Long aLong) throws Exception {
                         startActivity(new Intent(RxJavaActivity.this, MainActivity.class));
                         finish();
                         return null;
@@ -899,12 +674,7 @@ public class RxJavaActivity extends AppCompatActivity {
          */
         Observable.interval(2, 2, TimeUnit.SECONDS, Schedulers.io())
                 .take(5)//最多输出5个
-                .subscribe(new Action1<Long>() {
-                    @Override
-                    public void call(Long aLong) {
-                        Log.e(tag, "timer" + aLong);
-                    }
-                });
+                .subscribe(aLong -> Log.e(tag, "timer" + aLong));
     }
 
     /**
@@ -914,13 +684,8 @@ public class RxJavaActivity extends AppCompatActivity {
      * @param view
      */
     public void useRange(View view) {
-        Observable.range(3, 10, Schedulers.io())
-                .subscribe(new Action1<Integer>() {
-                    @Override
-                    public void call(Integer integer) {
-                        Log.e(tag, "timer" + integer);
-                    }
-                });
+        Observable.range(3, 10)
+                .subscribe(integer -> Log.e(tag, "timer" + integer));
     }
 
 
@@ -938,36 +703,41 @@ public class RxJavaActivity extends AppCompatActivity {
         //定义邮件内容
         final String[] mails = new String[]{"Here is an email!", "Another email!", "Yet another email!"};
         //每隔1秒就随机发布一封邮件
-        Observable<String> endlessMail = Observable.create(new Observable.OnSubscribe<String>() {
+        Observable<String> endlessMail = Observable.create(new ObservableOnSubscribe<String>() {
             @Override
-            public void call(Subscriber<? super String> subscriber) {
-                if (subscriber.isUnsubscribed()) {
+            public void subscribe(ObservableEmitter<String> e) throws Exception {
+                if (e.isDisposed()) {
                     return;
                 }
                 Random ran = new Random();
                 while (true) {
                     String mail = mails[ran.nextInt(mails.length)];
-                    subscriber.onNext(mail);
+                    e.onNext(mail);
                     if (num == 8) {
-                        subscriber.onError(new Throwable("故意出错"));
+                        e.onError(new Throwable("故意出错"));
                     }
                     num++;
                     try {
                         Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        subscriber.onError(e);
+                    } catch (InterruptedException ex) {
+                        e.onError(ex);
                     }
                 }
-
             }
         }).subscribeOn(Schedulers.io());
         //把上面产生的邮件内容缓存到列表中，并每隔3秒通知订阅者
         endlessMail.buffer(3, TimeUnit.SECONDS)
-                .subscribe(new Subscriber<List<String>>() {
+                .subscribe(new Observer<List<String>>() {
                     @Override
-                    public void onCompleted() {
+                    public void onSubscribe(Disposable d) {
 
+                    }
+
+                    @Override
+                    public void onNext(List<String> list) {
+                        Log.e(tag, String.format("You've got %d new messages!  Here they are!", list.size()));
+                        for (int i = 0; i < list.size(); i++)
+                            Log.e(tag, list.get(i).toString());
                     }
 
                     @Override
@@ -976,10 +746,8 @@ public class RxJavaActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(List<String> list) {
-                        Log.e(tag, String.format("You've got %d new messages!  Here they are!", list.size()));
-                        for (int i = 0; i < list.size(); i++)
-                            Log.e(tag, list.get(i).toString());
+                    public void onComplete() {
+
                     }
                 });
 
@@ -1005,26 +773,21 @@ public class RxJavaActivity extends AppCompatActivity {
     public void groupBy() {
         Observable.interval(1, TimeUnit.SECONDS)
                 .take(10)
-                .groupBy(new Func1<Long, Long>() {
+                .groupBy(new Function<Long, Long>() {
                     @Override
-                    public Long call(Long aLong) {
+                    public Long apply(Long aLong) throws Exception {
                         return aLong % 2;
                     }
-                }, new Func1<Long, Long>() {
+                }, new Function<Long, Long>() {
                     @Override
-                    public Long call(Long aLong) {
+                    public Long apply(Long aLong) throws Exception {
                         return 100 + aLong;
                     }
                 })
-                .subscribe(new Action1<GroupedObservable<Long, Long>>() {
+                .subscribe(new Consumer<GroupedObservable<Long, Long>>() {
                     @Override
-                    public void call(final GroupedObservable<Long, Long> result) {
-                        result.subscribe(new Action1<Long>() {
-                            @Override
-                            public void call(Long value) {
-                                Log.e(tag, "key:" + result.getKey() + ", value:" + value);
-                            }
-                        });
+                    public void accept(GroupedObservable<Long, Long> result) throws Exception {
+                        result.subscribe(integer -> Log.e(tag, "key:" + result.getKey() + ", value:" + integer));
                     }
                 });
     }
@@ -1044,19 +807,11 @@ public class RxJavaActivity extends AppCompatActivity {
         animals.add(animalTong);
         animals.add(animalHui);
         Observable
-                .from(animals)
+                .fromIterable(animals)
                 .cast(Dog.class)
-                .subscribe(new Action1<Dog>() {
-                    @Override
-                    public void call(Dog dog) {
-                        Log.e(tag, dog.getHead() + "," + dog.getName());
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.e(tag, "强制类型转换出错");
-                    }
-                });
+                .subscribe(dog -> Log.e(tag, dog.getHead() + "," + dog.getName())
+                        , e -> Log.e(tag, "强制类型转换出错"));
+
     }
 
     /**
@@ -1067,18 +822,13 @@ public class RxJavaActivity extends AppCompatActivity {
      */
     public void useScan() {
         just(1, 2, 3, 4, 5)
-                .scan(new Func2<Integer, Integer, Integer>() {
+                .scan(new BiFunction<Integer, Integer, Integer>() {
                     @Override
-                    public Integer call(Integer sum, Integer item) {
+                    public Integer apply(Integer integer, Integer integer2) throws Exception {
                         //参数sum就是上一次的计算结果
-                        return sum + item;
+                        return integer + integer2;
                     }
-                }).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                Log.e(tag, "Next: " + integer);
-            }
-        });
+                }).subscribe(integer -> Log.e(tag, "Next: " + integer));
         //输出结果
         /**
          Next: 1
@@ -1093,13 +843,12 @@ public class RxJavaActivity extends AppCompatActivity {
         Observable.interval(1, TimeUnit.SECONDS)
                 .take(12)
                 .window(3, TimeUnit.SECONDS)
-                .subscribe(new Action1<Observable<Long>>() {
+                .subscribe(new Consumer<Observable<Long>>() {
                     @Override
-                    public void call(Observable<Long> observable) {
-                        Log.e(tag, "subdivide begin......");
-                        observable.subscribe(new Action1<Long>() {
+                    public void accept(Observable<Long> longObservable) throws Exception {
+                        longObservable.subscribe(new Consumer<Long>() {
                             @Override
-                            public void call(Long aLong) {
+                            public void accept(Long aLong) throws Exception {
                                 Log.e(tag, "Next:" + aLong);
                             }
                         });
@@ -1114,17 +863,18 @@ public class RxJavaActivity extends AppCompatActivity {
      * ，那么通过debounce操作符也会把这个结果提交给订阅者。
      */
     public void debounce() {
-        Observable.create(new Observable.OnSubscribe<Integer>() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
-            public void call(Subscriber<? super Integer> subscriber) {
-                if (subscriber.isUnsubscribed())
+            public void subscribe(ObservableEmitter<Integer> subscriber) throws Exception {
+                if (subscriber.isDisposed()) {
                     return;
+                }
                 try {
                     for (int i = 1; i < 10; i++) {
                         subscriber.onNext(i);
                         Thread.sleep(i * 100);
                     }
-                    subscriber.onCompleted();
+                    subscriber.onComplete();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     subscriber.onError(e);
@@ -1132,19 +882,9 @@ public class RxJavaActivity extends AppCompatActivity {
             }
         }).subscribeOn(Schedulers.newThread())
                 .debounce(400, TimeUnit.MILLISECONDS)
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "completed!");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         Log.e(tag, "Next:" + integer);
                     }
                 });
@@ -1165,19 +905,9 @@ public class RxJavaActivity extends AppCompatActivity {
     public void distinct() {
         just(1, 1, 22, 3, 3, 4)
                 .distinct()
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "completed!");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         //输出1,22,3,4
                         Log.e(tag, "Next:" + integer);
                     }
@@ -1190,19 +920,9 @@ public class RxJavaActivity extends AppCompatActivity {
     public void elementAt() {
         just(1, 2, 3, 4, 5)
                 .elementAt(2)
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "completed!");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         //输出3
                         Log.e(tag, "elementAt Next:" + integer);
                     }
@@ -1215,25 +935,15 @@ public class RxJavaActivity extends AppCompatActivity {
      */
     public void filter() {
         just(1, 2, 3, 4, 5)
-                .filter(new Func1<Integer, Boolean>() {
+                .filter(new Predicate<Integer>() {
                     @Override
-                    public Boolean call(Integer integer) {
+                    public boolean test(Integer integer) throws Exception {
                         return integer < 4;
                     }
                 })
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "completed!");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
+                    public void accept(Integer integer) throws Exception {
                         //只输出1,2,3,
                         Log.e(tag, "filter Next:" + integer);
                     }
@@ -1246,19 +956,9 @@ public class RxJavaActivity extends AppCompatActivity {
     public void ofType() {
         just("hello", 2F, 3L, true, 'c', 4F, 5.2F)
                 .ofType(Float.class)
-                .subscribe(new Subscriber<Float>() {
+                .subscribe(new Consumer<Float>() {
                     @Override
-                    public void onCompleted() {
-                        Log.e(tag, "ofType onCompleted:");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Float aFloat) {
+                    public void accept(Float aFloat) throws Exception {
                         Log.e(tag, "ofType Next:" + aFloat);
                     }
                 });
@@ -1276,58 +976,6 @@ public class RxJavaActivity extends AppCompatActivity {
      * ，则抛出异常，否则把满足条件的结果提交给订阅者，
      */
     public void single() {
-        //不满足条件
-        just(1, 2, 3, 4, 5)
-                .single(new Func1<Integer, Boolean>() {
-                    @Override
-                    public Boolean call(Integer integer) {
-                        return integer > 3;
-                    }
-                }).subscribe(new Subscriber<Integer>() {
-            @Override
-            public void onCompleted() {
-                Log.e(tag, "single onCompleted:");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e(tag, "single onError:" + e.getMessage());
-            }
-
-            @Override
-            public void onNext(Integer integer) {
-                Log.e(tag, "single Next:" + integer);
-            }
-        });
-        // single onError:Sequence contains too many elements
-
-        //满足条件
-        just(1, 2, 3, 4, 5)
-                .single(new Func1<Integer, Boolean>() {
-                    @Override
-                    public Boolean call(Integer integer) {
-                        return integer > 4;
-                    }
-                }).subscribe(new Subscriber<Integer>() {
-            @Override
-            public void onCompleted() {
-                Log.e(tag, "single onCompleted:");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e(tag, "single onError:" + e.getMessage());
-            }
-
-            @Override
-            public void onNext(Integer integer) {
-                Log.e(tag, "single Next:" + integer);
-            }
-        });
-      /*
-        single Next:5
-        single onCompleted:
-        */
     }
 
     /**
@@ -1339,20 +987,15 @@ public class RxJavaActivity extends AppCompatActivity {
     public void ignoreElements() {
         just(1, 2, 3, 4, 5)
                 .ignoreElements()
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Action() {
                     @Override
-                    public void onCompleted() {
+                    public void run() throws Exception {
                         Log.e(tag, "Sequence complete.");
                     }
-
+                }, new Consumer<Throwable>() {
                     @Override
-                    public void onError(Throwable e) {
+                    public void accept(Throwable throwable) throws Exception {
 
-                    }
-
-                    @Override
-                    public void onNext(Integer integer) {
-                        Log.e(tag, "ignoreElements Next:" + integer);
                     }
                 });
     }
@@ -1373,23 +1016,12 @@ public class RxJavaActivity extends AppCompatActivity {
 
     public void skip(View view) {
         just(1, 2, 3, 4, 5, 6, 7).skip(3)
-                .subscribe(new Subscriber<Integer>() {
+                .subscribe(new Consumer<Integer>() {
                     @Override
-                    public void onNext(Integer item) {
-                        System.out.println("Next: " + item);
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        System.err.println("Error: " + error.getMessage());
-                    }
-
-                    @Override
-                    public void onCompleted() {
-                        System.out.println("Sequence complete.");
+                    public void accept(Integer integer) throws Exception {
+                        Log.e(tag, "Next: " + integer);
                     }
                 });
-
     }
 
     /**
@@ -1405,48 +1037,38 @@ public class RxJavaActivity extends AppCompatActivity {
     public void combineLatest() {
         //产生0,5,10,15,20数列
         Observable<Long> observable1 = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
-                .map(new Func1<Long, Long>() {
+                .map(new Function<Long, Long>() {
                     @Override
-                    public Long call(Long aLong) {
+                    public Long apply(Long aLong) throws Exception {
                         return aLong * 5;
                     }
                 }).take(5);
         //产生0,5,10,15,20数列
         Observable<Long> observable3 = Observable.interval(300, 1000, TimeUnit.MILLISECONDS)
-                .map(new Func1<Long, Long>() {
+                .map(new Function<Long, Long>() {
                     @Override
-                    public Long call(Long aLong) {
+                    public Long apply(Long aLong) throws Exception {
                         return aLong * 5;
                     }
                 }).take(5);
 
         //产生0,10,20,30,40数列
         Observable<Long> observable2 = Observable.interval(500, 1000, TimeUnit.MILLISECONDS)
-                .map(new Func1<Long, Long>() {
+                .map(new Function<Long, Long>() {
                     @Override
-                    public Long call(Long aLong) {
+                    public Long apply(Long aLong) throws Exception {
                         return aLong * 10;
                     }
                 }).take(5);
 
-        Observable.combineLatest(observable1, observable2, new Func2<Long, Long, Long>() {
+        Observable.combineLatest(observable1, observable2, new BiFunction<Long, Long, Long>() {
             @Override
-            public Long call(Long aLong, Long aLong2) {
+            public Long apply(Long aLong, Long aLong2) throws Exception {
                 return aLong + aLong2;
             }
-        }).subscribe(new Subscriber<Long>() {
+        }).subscribe(new Consumer<Long>() {
             @Override
-            public void onCompleted() {
-                Log.e(tag, "Sequence complete.");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e(tag, "Error: " + e.getMessage());
-            }
-
-            @Override
-            public void onNext(Long aLong) {
+            public void accept(Long aLong) throws Exception {
                 Log.e(tag, "Next: " + aLong);
             }
         });
@@ -1477,29 +1099,12 @@ public class RxJavaActivity extends AppCompatActivity {
     public void zip() {
         Observable<Integer> observable1 = just(10, 20, 30);
         Observable<Integer> observable2 = just(4, 8, 12, 16, 18);
-        Observable.zip(observable1, observable2, new Func2<Integer, Integer, Integer>() {
-            @Override
-            public Integer call(Integer integer, Integer integer2) {
-                return integer + integer2;
-            }
-        }).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                Log.e(tag, "zip Next:" + integer);
-            }
-        });
+        Observable.zip(observable1, observable2,
+                (integer1, integer2) -> integer1 + integer2
+        ).subscribe(integer -> Log.e(tag, "zip Next:" + integer));
         //zipWith
-        observable1.zipWith(observable2, new Func2<Integer, Integer, String>() {
-            @Override
-            public String call(Integer integer, Integer integer2) {
-                return integer + "zipWith" + integer2;
-            }
-        }).subscribe(new Action1<String>() {
-            @Override
-            public void call(String s) {
-                Log.e(tag, "zipWith:" + s);
-            }
-        });
+        observable1.zipWith(observable2, (integer1, integer2) -> integer1 + "hahah" + integer2
+        ).subscribe(s -> Log.e(tag, s));
     }
 
     @Override

@@ -27,6 +27,12 @@
             android:layout_height="wrap_content"
             android:text="上传多个文件" />
 
+        <Button
+            android:id="@+id/btn_updateApk_event"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="结束所有的Activity" />
+
     </LinearLayout>
 
 </ScrollView>

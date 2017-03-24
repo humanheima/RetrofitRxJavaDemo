@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.hm.retrofitrxjavademo.App;
 import com.hm.retrofitrxjavademo.util.NetWorkUtil;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
+import io.reactivex.Observable;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -21,10 +23,7 @@ import okhttp3.Response;
 import okio.Buffer;
 import okio.BufferedSource;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import rx.Observable;
-import rx.Subscriber;
 
 import static com.hm.retrofitrxjavademo.ui.activity.RxJavaActivity.tag;
 
@@ -50,7 +49,7 @@ public class NetWork {
                     .client(okHttpClient)
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
             api = retrofit.create(API.class);
         }
@@ -64,7 +63,7 @@ public class NetWork {
                     .client(okHttpClient)
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
             upLoadFileApi = retrofit.create(UpLoadFileApi.class);
         }
@@ -107,26 +106,39 @@ public class NetWork {
      * @return
      */
     public static <T> Observable<T> flatResponse(final HttpResult<T> response) {
-        return Observable.create(new Observable.OnSubscribe<T>() {
-
+        return Observable.create((e) -> {
+            if (response.isSuccess()) {
+                if (!e.isDisposed()) {
+                    e.onNext(response.data);
+                }
+            } else {
+                if (!e.isDisposed()) {
+                    e.onError(new APIException(response.resultCode, response.resultMessage));
+                }
+                return;
+            }
+            if (!e.isDisposed()) {
+                e.onComplete();
+            }
+        });
+        /*return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void call(Subscriber<? super T> subscriber) {
+            public void subscribe(ObservableEmitter<T> e) throws Exception {
                 if (response.isSuccess()) {
-                    if (!subscriber.isUnsubscribed()) {
-                        subscriber.onNext(response.data);
+                    if (!e.isDisposed()) {
+                        e.onNext(response.data);
                     }
                 } else {
-                    if (!subscriber.isUnsubscribed()) {
-                        subscriber.onError(new APIException(response.resultCode, response.resultMessage));
+                    if (!e.isDisposed()) {
+                        e.onError(new APIException(response.resultCode, response.resultMessage));
                     }
                     return;
                 }
-
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onCompleted();
+                if (!e.isDisposed()) {
+                    e.onComplete();
                 }
             }
-        });
+        });*/
     }
 
 

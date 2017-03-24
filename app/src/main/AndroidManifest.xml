@@ -16,13 +16,17 @@
         android:theme="@style/AppTheme">
         <activity android:name=".ui.activity.MainActivity"></activity>
         <activity android:name=".ui.activity.RxJavaActivity" />
-        <activity android:name=".ui.activity.RetrofitActivity">
-
-        </activity>
+        <activity android:name=".ui.activity.RetrofitActivity"></activity>
         <activity android:name=".ui.activity.OkHttpActivity" />
         <activity android:name=".ui.activity.UploadFileActivity" />
         <activity
             android:name=".ui.activity.PauseContinueActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity android:name=".ui.activity.DownLoadManagerActivity"></activity>
+        <activity
+            android:name=".ui.activity.OkHttp3DownloadActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

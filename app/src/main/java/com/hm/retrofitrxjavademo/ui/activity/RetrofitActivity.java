@@ -20,11 +20,9 @@ import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
-import com.hm.retrofitrxjavademo.model.MovieEntity;
-import com.hm.retrofitrxjavademo.model.NowWeatherBean;
-import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,6 +37,8 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -47,15 +47,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 public class RetrofitActivity extends AppCompatActivity {
 
@@ -70,7 +62,8 @@ public class RetrofitActivity extends AppCompatActivity {
     TextView textResult;
     private Map<String, Object> map;
     private LoadingDialog loadingDialog;
-    private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/20AD322F5D49B9F649A70C4A3083D8D2.apk?mkey=58758c694bc7812a&f=d588&c=0&fsname=com.xunao.wanfeng_1.1_4.apk&csr=4d5s&p=.apk";
+    // private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/20AD322F5D49B9F649A70C4A3083D8D2.apk?mkey=58758c694bc7812a&f=d588&c=0&fsname=com.xunao.wanfeng_1.1_4.apk&csr=4d5s&p=.apk";
+    private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/5D7CD21498D9433BD2F362BF06068C07.apk?mkey=58d2100bacc7802a&f=e381&c=0&fsname=com.moji.mjweather_6.0209.02_6020902.apk&csr=1bbd&p=.apk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,82 +90,35 @@ public class RetrofitActivity extends AppCompatActivity {
         NetWork.getApi().getNowWeather(map)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<NowWeatherBean>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Toast.makeText(RetrofitActivity.this, "error" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNext(NowWeatherBean nowWeatherBean) {
-                        textResult.setText(nowWeatherBean.getResult().getCitynm());
-                        Log.e(tag, nowWeatherBean.getResult().getCitynm());
-                    }
-                });
+                .subscribe(nowWeatherBean -> {
+                            textResult.setText(nowWeatherBean.getResult().getCitynm());
+                            Log.e(tag, nowWeatherBean.getResult().getCitynm());
+                        }, e -> Toast.makeText(RetrofitActivity.this, "error" + e.getMessage(), Toast.LENGTH_SHORT).show(),
+                        () -> Log.e("onComplete", "onComplete"));
     }
 
     private void test() {
         NetWork.getApi().testNowWeather(map)
-                .flatMap(new Func1<HttpResult<NowWeatherBean>, Observable<NowWeatherBean>>() {
-                    @Override
-                    public Observable<NowWeatherBean> call(HttpResult<NowWeatherBean> result) {
-                        return NetWork.flatResponse(result);
-                    }
-                })
+                .flatMap(NetWork::flatResponse)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<NowWeatherBean>() {
-                    @Override
-                    public void call(NowWeatherBean nowWeatherBean) {
-
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-
-                    }
-                });
+                .subscribe(nowWeatherBean -> Log.e(TAG, nowWeatherBean.getSuccess()),
+                        e -> Log.e(TAG, e.getMessage()));
     }
 
     //进行网络请求
     private void getMovie() {
-
         NetWork.getApi().getTopMovie(0, 2)
                 .subscribeOn(Schedulers.io())
-                .doOnSubscribe(new Action0() {
-                    @Override
-                    public void call() {
+                .doOnSubscribe(d -> {
+                    if (!d.isDisposed()) {
                         loadingDialog.show();
                     }
                 })
-                .doAfterTerminate(new Action0() {
-                    @Override
-                    public void call() {
-                        loadingDialog.dismiss();
-                    }
-                })
+                .doAfterTerminate(() -> loadingDialog.dismiss())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<MovieEntity>() {
-                    @Override
-                    public void call(MovieEntity movieEntity) {
-                        textMovieResult.setText(movieEntity.getTitle());
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        textMovieResult.setText(throwable.getMessage());
-                    }
-                }, new Action0() {
-                    @Override
-                    public void call() {
-                        Toast.makeText(RetrofitActivity.this, "Get Top Movie Completed", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                .subscribe(movieEntity -> textMovieResult.setText(movieEntity.getTitle()),
+                        e -> textMovieResult.setText(e.getMessage()));
     }
 
     private void uploadSingleFile(File file) {
@@ -187,24 +133,8 @@ public class RetrofitActivity extends AppCompatActivity {
         NetWork.getUpLoadFileApi().uploadSingleFile(description, body)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-
-                    }
-                });
-
-
+                .subscribe(s -> Log.e(TAG, s),
+                        e -> Log.e(TAG, e.getMessage()));
     }
 
     private void uploadMulFile(File file) {
@@ -219,24 +149,8 @@ public class RetrofitActivity extends AppCompatActivity {
         NetWork.getUpLoadFileApi().uploadSingleFile(description, body)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-
-                    }
-                });
-
-
+                .subscribe(s -> Log.e(TAG, s),
+                        e -> Log.e(TAG, e.getMessage()));
     }
 
     private void uploadManyFlie(File file1, File file2) {
@@ -251,30 +165,25 @@ public class RetrofitActivity extends AppCompatActivity {
         NetWork.getUpLoadFileApi().uploadManyFile(requestBodyMap)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-
-                    }
-                });
-
-
+                .subscribe(s -> Log.e(TAG, s),
+                        e -> Log.e(TAG, e.getMessage()));
     }
+
+    private static final String TAG = "RetrofitActivity";
 
     private void downLoadWeChat(String downLoadUrl) {
         NetWork.getApi().downloadFile(downLoadUrl)
                 .subscribeOn(Schedulers.io())
-                .map(new Func1<ResponseBody, Boolean>() {
+                .map(this::saveToDisk)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(b -> {
+                    if (b) {
+                        Log.e(TAG, "保存成功");
+                    } else {
+                        Log.e(TAG, "保存失败");
+                    }
+                }, e -> Log.e(TAG, e.getMessage()));
+               /* .map(new Func1<ResponseBody, Boolean>() {
                     @Override
                     public Boolean call(ResponseBody responseBody) {
                         //保存到本地
@@ -296,10 +205,9 @@ public class RetrofitActivity extends AppCompatActivity {
                         Log.e(tag, "保存失败" + throwable.getMessage());
                         Toast.makeText(RetrofitActivity.this, "保存失败", Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
 
     }
-
 
     private ProgressDialog dialog;
     private ProgressBean progressBean;
@@ -315,12 +223,7 @@ public class RetrofitActivity extends AppCompatActivity {
         dialog.setMessage("正在下载，请稍后...");
         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         dialog.setCancelable(true);
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", (dialog, which) -> dialog.dismiss());
 
         progressBean = new ProgressBean();
 
@@ -363,38 +266,23 @@ public class RetrofitActivity extends AppCompatActivity {
 
         DownloadApi downloadApi = new Retrofit.Builder()
                 .client(client)
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl("http://msoftdl.360.cn")
                 .build()
                 .create(DownloadApi.class);
 
         dialog.show();
-        downloadApi.downLoad(null)
+        downloadApi.downLoad(downLoadUrl)
                 .subscribeOn(Schedulers.io())//不能在主线程下载
-                .subscribe(new Subscriber<ResponseBody>() {
-                    @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(tag, "downLoad error:" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ResponseBody response) {
-                        if (saveToDisk(response)) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.dismiss();
-                                    installApk(downLoadFile);
-                                }
-                            });
-                        } else {
-                            Log.e(tag, "保存文件失败");
-                        }
+                .subscribe(responseBody -> {
+                    if (saveToDisk(responseBody)) {
+                        runOnUiThread(() -> {
+                            dialog.dismiss();
+                            installApk(downLoadFile);
+                        });
+                    } else {
+                        Log.e(TAG, "保存文件失败");
                     }
                 });
     }

@@ -33,6 +33,7 @@ public class ProgressDownloader {
         //在下载、暂停后的继续下载中可复用同一个client对象
         client = getProgressClient();
     }
+
     //每次下载需要新建新的Call对象
     private Call newCall(long startPoints) {
         Request request = new Request.Builder()
@@ -43,7 +44,7 @@ public class ProgressDownloader {
     }
 
     public OkHttpClient getProgressClient() {
-    // 拦截器，用上ProgressResponseBody
+        // 拦截器，用上ProgressResponseBody
         Interceptor interceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -59,24 +60,24 @@ public class ProgressDownloader {
                 .build();
     }
 
-// startsPoint指定开始下载的点
+    // startsPoint指定开始下载的点
     public void download(final long startsPoint) {
         call = newCall(startsPoint);
         call.enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
 
-                    }
+            }
 
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        save(response, startsPoint);
-                    }
-                });
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                save(response, startsPoint);
+            }
+        });
     }
 
     public void pause() {
-        if(call!=null){
+        if (call != null) {
             call.cancel();
         }
     }
@@ -100,7 +101,7 @@ public class ProgressDownloader {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             try {
                 in.close();
                 if (channelOut != null) {
@@ -112,6 +113,34 @@ public class ProgressDownloader {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private boolean saveToDisk(Response response, long startsPoint) {
+        ResponseBody body = response.body();
+        InputStream in = body.byteStream();
+        // 随机访问文件，可以指定断点续传的起始位置
+        RandomAccessFile randomAccessFile = null;
+        try {
+            randomAccessFile = new RandomAccessFile(destination, "rwd");
+            //Chanel NIO中的用法，由于RandomAccessFile没有使用缓存策略，直接使用会使得下载速度变慢，亲测缓存下载3.3秒的文件，用普通的RandomAccessFile需要20多秒。
+            byte[] b = new byte[1024];
+            int len;
+            while ((len = in.read(b)) != -1) {
+                randomAccessFile.write(len);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                in.close();
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return false;
         }
     }
 }
