@@ -6,6 +6,7 @@ import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
@@ -17,7 +18,6 @@ import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
-import rx.Observable;
 
 /**
  * Created by dmw on 2016/9/9.

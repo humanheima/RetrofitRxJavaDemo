@@ -20,5 +20,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="测试上传文件" />
+
+        <Button
+            android:id="@+id/btn_upload_okhttp_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="user okhttp"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btn_user_DownloadManager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="使用系统自带的DownloadManager"
+            android:textAllCaps="false" />
     </LinearLayout>
 </ScrollView>
