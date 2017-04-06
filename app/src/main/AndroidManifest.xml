@@ -16,11 +16,6 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.activity.MainActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".ui.activity.RxJavaActivity" />
-        <activity android:name=".ui.activity.RetrofitActivity" />
-        <activity
-            android:name=".ui.activity.OkHttp3DownloadActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +23,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.DownloadManagerActivity"></activity>
+        <activity android:name=".ui.activity.RxJavaActivity" />
+        <activity android:name=".ui.activity.RetrofitActivity" />
+        <activity
+            android:name=".ui.activity.OkHttp3DownloadActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.activity.DownloadManagerActivity" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.hm.retrofitrxjavademo.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
     </application>
 
 </manifest>

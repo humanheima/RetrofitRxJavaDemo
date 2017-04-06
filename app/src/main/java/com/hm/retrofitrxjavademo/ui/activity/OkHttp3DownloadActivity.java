@@ -132,8 +132,6 @@ public class OkHttp3DownloadActivity extends BaseActivity {
         Intent intent = new Intent();
         intent.setAction("android.intent.action.VIEW");
         intent.addCategory("android.intent.category.DEFAULT");
-        intent.setType("application/vnd.android.package-archive");
-        intent.setData(Uri.fromFile(file));
         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         startActivity(intent);
     }
