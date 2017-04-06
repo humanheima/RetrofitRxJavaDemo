@@ -17,18 +17,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(bindLayout());
         ButterKnife.bind(this);
         initData();
-        finishWhenUpdateApk();
     }
 
     protected abstract int bindLayout();
 
     protected abstract void initData();
 
-    public void finishWhenUpdateApk() {
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 }

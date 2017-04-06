@@ -1,5 +1,7 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -10,7 +12,9 @@ import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownLoadObserver;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownloadInfo;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
-import com.hm.retrofitrxjavademo.util.DownloadManager;
+import com.hm.retrofitrxjavademo.okhttpdownload.DownloadManager;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -55,77 +59,82 @@ public class OkHttp3DownloadActivity extends BaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.main_btn_down1:
-                DownloadManager.getInstance().downLoad(wifiUrl
+                DownloadManager.getInstance().downLoad(wifiUrl, new DownLoadObserver() {
+                    @Override
+                    public void onNext(DownloadInfo value) {
+                        super.onNext(value);
+                        mainProgress1.setMax((int) value.getTotal());
+                        mainProgress1.setProgress((int) value.getProgress());
+                    }
 
-                        , new DownLoadObserver() {
-                            @Override
-                            public void onNext(DownloadInfo value) {
-                                super.onNext(value);
-                                mainProgress1.setMax((int) value.getTotal());
-                                mainProgress1.setProgress((int) value.getProgress());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                if (downloadInfo != null) {
-                                    Toast.makeText(OkHttp3DownloadActivity.this,
-                                            downloadInfo.getFileName() + "-DownloadComplete",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                    @Override
+                    public void onComplete() {
+                        if (downloadInfo != null) {
+                            Toast.makeText(OkHttp3DownloadActivity.this,
+                                    downloadInfo.getFileName() + "-DownloadComplete",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
                 break;
             case R.id.main_btn_cancel1:
                 DownloadManager.getInstance().cancel(wifiUrl);
                 break;
             case R.id.main_btn_down2:
-                DownloadManager.getInstance().downLoad(bookUrl
+                DownloadManager.getInstance().downLoad(bookUrl, new DownLoadObserver() {
+                    @Override
+                    public void onNext(DownloadInfo value) {
+                        super.onNext(value);
+                        mainProgress2.setMax((int) value.getTotal());
+                        mainProgress2.setProgress((int) value.getProgress());
+                    }
 
-                        , new DownLoadObserver() {
-                            @Override
-                            public void onNext(DownloadInfo value) {
-                                super.onNext(value);
-                                mainProgress2.setMax((int) value.getTotal());
-                                mainProgress2.setProgress((int) value.getProgress());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                if (downloadInfo != null) {
-                                    Toast.makeText(OkHttp3DownloadActivity.this,
-                                            downloadInfo.getFileName() + "-DownloadComplete",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                    @Override
+                    public void onComplete() {
+                        if (downloadInfo != null) {
+                            Toast.makeText(OkHttp3DownloadActivity.this,
+                                    downloadInfo.getFileName() + "-DownloadComplete",
+                                    Toast.LENGTH_SHORT).show();
+                            installApk(new File(downloadInfo.getFileName()));
+                        }
+                    }
+                });
                 break;
             case R.id.main_btn_cancel2:
                 DownloadManager.getInstance().cancel(bookUrl);
                 break;
             case R.id.main_btn_down3:
-                DownloadManager.getInstance().downLoad(weatherUrl
+                DownloadManager.getInstance().downLoad(weatherUrl, new DownLoadObserver() {
+                    @Override
+                    public void onNext(DownloadInfo value) {
+                        super.onNext(value);
+                        mainProgress3.setMax((int) value.getTotal());
+                        mainProgress3.setProgress((int) value.getProgress());
+                    }
 
-                        , new DownLoadObserver() {
-                            @Override
-                            public void onNext(DownloadInfo value) {
-                                super.onNext(value);
-                                mainProgress3.setMax((int) value.getTotal());
-                                mainProgress3.setProgress((int) value.getProgress());
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                if (downloadInfo != null) {
-                                    Toast.makeText(OkHttp3DownloadActivity.this,
-                                            downloadInfo.getFileName() + "-DownloadComplete",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                    @Override
+                    public void onComplete() {
+                        if (downloadInfo != null) {
+                            Toast.makeText(OkHttp3DownloadActivity.this,
+                                    downloadInfo.getFileName() + "-DownloadComplete",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
                 break;
             case R.id.main_btn_cancel3:
                 DownloadManager.getInstance().cancel(weatherUrl);
                 break;
         }
+    }
+
+    private void installApk(File file) {
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.VIEW");
+        intent.addCategory("android.intent.category.DEFAULT");
+        intent.setType("application/vnd.android.package-archive");
+        intent.setData(Uri.fromFile(file));
+        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        startActivity(intent);
     }
 }

@@ -308,10 +308,8 @@ public class RetrofitActivity extends AppCompatActivity {
         intent.setAction("android.intent.action.VIEW");
         intent.addCategory("android.intent.category.DEFAULT");
         intent.setType("application/vnd.android.package-archive");
-        intent.setData(Uri.fromFile(file));
         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         startActivity(intent);
-
     }
 
     /**
@@ -324,8 +322,8 @@ public class RetrofitActivity extends AppCompatActivity {
 
         OutputStream out;
         InputStream in;
-        BufferedInputStream bis = null;
-        BufferedOutputStream bo = null;
+        BufferedInputStream bis;
+        BufferedOutputStream bo;
         long totalLength;
 
         try {

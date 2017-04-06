@@ -1,11 +1,10 @@
-package com.hm.retrofitrxjavademo.util;
+package com.hm.retrofitrxjavademo.okhttpdownload;
 
 import android.os.Environment;
 import android.util.Log;
 
 import com.hm.retrofitrxjavademo.App;
-import com.hm.retrofitrxjavademo.okhttpdownload.DownLoadObserver;
-import com.hm.retrofitrxjavademo.okhttpdownload.DownloadInfo;
+import com.hm.retrofitrxjavademo.util.IOUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;

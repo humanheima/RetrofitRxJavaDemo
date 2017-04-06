@@ -1,5 +1,7 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.view.View;
+
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
@@ -17,8 +19,16 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    @OnClick(R.id.btn_upload_file_activity)
-    public void onClick() {
-        UploadFileActivity.launch(this);
+    @OnClick({R.id.btn_upload_file_activity, R.id.btn_upload_okhttp_activity})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_upload_file_activity:
+                break;
+            case R.id.btn_upload_okhttp_activity:
+                break;
+            default:
+                break;
+        }
+
     }
 }
