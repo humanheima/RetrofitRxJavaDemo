@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.download.DownLoadProgressListener;
@@ -87,14 +86,14 @@ public class RetrofitActivity extends AppCompatActivity {
         map.put("weaid", 1);
         map.put("appkey", "15732");
         map.put("sign", "bf10378fb5e93259d0a94f2423fa81e5");
-        NetWork.getApi().getNowWeather(map)
+       /* NetWork.getApi().getNowWeather(map)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(nowWeatherBean -> {
                             textResult.setText(nowWeatherBean.getResult().getCitynm());
                             Log.e(tag, nowWeatherBean.getResult().getCitynm());
                         }, e -> Toast.makeText(RetrofitActivity.this, "error" + e.getMessage(), Toast.LENGTH_SHORT).show(),
-                        () -> Log.e("onComplete", "onComplete"));
+                        () -> Log.e("onComplete", "onComplete"));*/
     }
 
     private void test() {
