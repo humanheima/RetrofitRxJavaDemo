@@ -121,12 +121,10 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(wifiUrl));
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "wifi.apk");
         downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "wifi.apk";
-        //request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
         request.allowScanningByMediaScanner();
-        //定制Notification样式
         request.setTitle("下载");
-        request.setDescription("正在下载,请稍后...");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         //设置下载文件类型
         request.setMimeType("application/vnd.android.package-archive");
         id = downloadManager.enqueue(request);
@@ -171,15 +169,13 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
         File file = new File(path);
         Intent intent = new Intent(Intent.ACTION_VIEW);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //如果是7.0以上的系统，要使用FileProvider的方式构建Uri
             uri = FileProvider.getUriForFile(this, "com.hm.retrofitrxjavademo.fileprovider", file);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.setDataAndType(uri, "application/vnd.android.package-archive");
-            Log.e(TAG, "install uri=" + uri);
         } else {
             intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-            Log.e(TAG, "Uri.fromFile(file)=" + Uri.fromFile(file));
         }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//4.0以上系统弹出安装成功打开界面
         startActivity(intent);
     }
 
@@ -216,6 +212,7 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        timer.cancel();
+        if (timer != null)
+            timer.cancel();
     }
 }
