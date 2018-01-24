@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.hm.retrofitrxjavademo.App;
 import com.hm.retrofitrxjavademo.util.NetWorkUtil;
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +22,9 @@ import okhttp3.Response;
 import okio.Buffer;
 import okio.BufferedSource;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.hm.retrofitrxjavademo.ui.activity.RxJavaActivity.tag;
 
 /**
  * Created by Administrator on 2016/9/9.
@@ -37,6 +36,7 @@ public class NetWork {
     private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
 
+    private static final String TAG = "NetWork";
     //private static final String BASE_URL = "https://api.heweather.com/x3/";
 
     private static final String BASE_URL = "http://api.k780.com:88";
@@ -171,9 +171,9 @@ public class NetWork {
                 request.body().writeTo(buffer);
             }
             String query = request.url().query();
-            Log.e(tag, "request path-->" + request.url());
-            Log.e(tag, "request query-->" + query);
-            Log.e(tag, "request body" + buffer.readUtf8());
+            Log.e(TAG, "request path-->" + request.url());
+            Log.e(TAG, "request query-->" + query);
+            Log.e(TAG, "request body" + buffer.readUtf8());
             //没有网络就读取本地缓存的数据
             if (!NetWorkUtil.isConnected()) {
                 request = request.newBuilder()
@@ -188,8 +188,8 @@ public class NetWork {
             Response originalResponse = chain.proceed(request);
             BufferedSource source = originalResponse.body().source();
             source.request(Long.MAX_VALUE);//不加这句打印不出来
-//            Log.e(tag, "response" + source.buffer().clone().readUtf8());
-            // Log.e(tag, "request response" + originalResponse.body().string());
+//            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
+            // Log.e(TAG, "request response" + originalResponse.body().string());
             Response response;
             if (NetWorkUtil.isConnected()) {
                 //有网的时候读接口上的@Headers里的配置，你可以在这里进行统一的设置(注掉部分)
@@ -200,7 +200,7 @@ public class NetWork {
                         .removeHeader("Pragma")
                         .build();
 
-                Log.e(tag, "request response head" + response.headers());
+                Log.e(TAG, "request response head" + response.headers());
                 return response;
             } else {
                 //没网络的时候保存6分钟
@@ -209,7 +209,7 @@ public class NetWork {
                         .header("Cache-Control", "public, only-if-cached, max-age=" + maxAge)//only-if-cached:(仅为请求标头)请求:告知缓存者,我希望内容来自缓存，我并不关心被缓存响应,是否是新鲜的.
                         .removeHeader("Pragma")//移除pragma消息头，移除它的原因是因为pragma也是控制缓存的一个消息头属性
                         .build();
-                Log.e(tag, "request response head" + response.headers());
+                Log.e(TAG, "request response head" + response.headers());
                 return response;
             }
         }

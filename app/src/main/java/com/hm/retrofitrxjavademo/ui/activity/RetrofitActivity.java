@@ -21,7 +21,6 @@ import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -46,6 +45,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitActivity extends AppCompatActivity {

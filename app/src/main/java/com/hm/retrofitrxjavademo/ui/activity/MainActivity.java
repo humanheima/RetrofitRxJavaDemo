@@ -38,4 +38,8 @@ public class MainActivity extends BaseActivity {
         }
 
     }
+
+    public void launchRxJava2(View view) {
+        RxJava2Activity.launch(this);
+    }
 }
