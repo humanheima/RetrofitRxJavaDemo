@@ -19,8 +19,6 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    @OnClick({R.id.btn_upload_file_activity, R.id.btn_upload_okhttp_activity,
-            R.id.btn_user_DownloadManager, R.id.btn_only_retrofit})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_upload_file_activity:

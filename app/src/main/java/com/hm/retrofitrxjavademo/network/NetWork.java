@@ -13,6 +13,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -106,7 +108,7 @@ public class NetWork {
      * @return
      */
     public static <T> Observable<T> flatResponse(final HttpResult<T> response) {
-        return Observable.create((e) -> {
+        /*return Observable.create((e) -> {
             if (response.isSuccess()) {
                 if (!e.isDisposed()) {
                     e.onNext(response.data);
@@ -120,30 +122,24 @@ public class NetWork {
             if (!e.isDisposed()) {
                 e.onComplete();
             }
-        });
-        /*return Observable.create(new ObservableOnSubscribe<T>() {
+        });*/
+        return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
             public void subscribe(ObservableEmitter<T> e) throws Exception {
                 if (response.isSuccess()) {
-                    if (!e.isDisposed()) {
-                        e.onNext(response.data);
-                    }
+                    e.onNext(response.data);
                 } else {
-                    if (!e.isDisposed()) {
-                        e.onError(new APIException(response.resultCode, response.resultMessage));
-                    }
+                    e.onError(new APIException(response.resultCode, response.resultMessage));
                     return;
                 }
-                if (!e.isDisposed()) {
-                    e.onComplete();
-                }
+                e.onComplete();
             }
-        });*/
+        });
     }
 
 
     /**
-     * 自定义异常，当接口返回的{link Response#code}不为{link Constant#OK}时，需要跑出此异常
+     * 自定义异常，当接口返回的{link Response#code}不为{link Constant#OK}时，需要抛出此异常
      * eg：登陆时验证码错误；参数为传递等
      */
     public static class APIException extends Exception {

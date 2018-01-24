@@ -19,6 +19,8 @@ import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
+import com.hm.retrofitrxjavademo.model.NowWeatherBean;
+import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
 
@@ -36,6 +38,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -98,11 +102,41 @@ public class RetrofitActivity extends AppCompatActivity {
 
     private void test() {
         NetWork.getApi().testNowWeather(map)
+                .map(new Function<HttpResult<NowWeatherBean>, NowWeatherBean>() {
+                    @Override
+                    public NowWeatherBean apply(HttpResult<NowWeatherBean> result) throws Exception {
+                        return result.getData();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<NowWeatherBean>() {
+                    @Override
+                    public void accept(NowWeatherBean nowWeatherBean) throws Exception {
+                        Log.e(TAG, nowWeatherBean.getSuccess());
+                    }
+                });
+       /* NetWork.getApi().testNowWeather(map)
+                .flatMap(new Function<HttpResult<NowWeatherBean>, ObservableSource<NowWeatherBean>>() {
+                    @Override
+                    public ObservableSource<NowWeatherBean> apply(HttpResult<NowWeatherBean> result) throws Exception {
+                        return NetWork.flatResponse(result);
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<NowWeatherBean>() {
+                    @Override
+                    public void accept(NowWeatherBean nowWeatherBean) throws Exception {
+                        Log.e(TAG, nowWeatherBean.getSuccess());
+                    }
+                });*/
+        /*NetWork.getApi().testNowWeather(map)
                 .flatMap(NetWork::flatResponse)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(nowWeatherBean -> Log.e(TAG, nowWeatherBean.getSuccess()),
-                        e -> Log.e(TAG, e.getMessage()));
+                        e -> Log.e(TAG, e.getMessage()));*/
     }
 
     //进行网络请求
