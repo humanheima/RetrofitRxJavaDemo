@@ -55,6 +55,35 @@ public class RxJava2Activity extends AppCompatActivity {
         compositeDisposable = new CompositeDisposable();
     }
 
+    public void fun1(View view) {
+        Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> e) throws Exception {
+                e.onNext("1");
+                e.onComplete();
+            }
+        }).subscribe(new Observer<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, "onSubscribe() called with: d = [" + d + "]");
+            }
+
+            @Override
+            public void onNext(String value) {
+                Log.d(TAG, "onNext() called with: value = [" + value + "]");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "onError() called with: e = [" + e + "]");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete() called");
+            }
+        });
+    }
 
     /**
      * {@link Disposable}
@@ -163,12 +192,14 @@ public class RxJava2Activity extends AppCompatActivity {
             public String apply(Integer integer) throws Exception {
                 return "string:" + integer;
             }
-        }).subscribe(new Consumer<String>() {
-            @Override
-            public void accept(String s) throws Exception {
-                Log.e(TAG, s);
-            }
-        });
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.e(TAG, s);
+                    }
+                });
     }
 
     public void testFlatMap(View view) {

@@ -92,3 +92,101 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
     }
     
    ```
+* from 
+
+   ```
+   private void from() {
+           String[] words = {"Hello", "Hi", "Aloha"};
+           Observable.fromArray(words)
+                   .subscribe(new Consumer<String>() {
+                       @Override
+                       public void accept(String s) throws Exception {
+                           Log.e(TAG, "accept: s=" + s);
+                       }
+                   });
+           ArrayList<String> list = new ArrayList<>();
+           list.add("hello");
+           list.add("Hi");
+           list.add("Aloha");
+           Observable.fromIterable(list)
+                   .subscribe(new Consumer<String>() {
+                       @Override
+                       public void accept(String s) throws Exception {
+                           Log.e(TAG, "accept: s=" + s);
+                       }
+                   });
+           FutureTask<Integer> future = new FutureTask<Integer>(new Callable<Integer>() {
+               @Override
+               public Integer call() throws Exception {
+                   Log.e(TAG, "call: current Thread is" + Thread.currentThread().getName());
+                   Thread.sleep(1000);
+                   return 1;
+               }
+           });
+           new Thread(future).start();
+   
+           Observable.fromFuture(future, 3000, TimeUnit.MILLISECONDS)
+                   .subscribe(new Consumer<Integer>() {
+                       @Override
+                       public void accept(Integer integer) throws Exception {
+                           Log.e(TAG, "accept: integer =" + integer);
+                       }
+                   }, new Consumer<Throwable>() {
+                       @Override
+                       public void accept(Throwable throwable) throws Exception {
+                           Log.e(TAG, "accept: error:" + throwable);
+                       }
+                   });
+       }
+   ```
+* buffer(int count, int skip)
+```
+        //buffer(int count, int skip),从原始Observable中每缓存skip个item，从中选择最多count个数据发
+        // 射。如果从原始Observable缓存的数据不到skip个，就遇到onCompleted(),则发射当前缓存的数据。
+        // 如果从原始Observable缓存的数据不到skip个，就遇到onError(),如果当前缓存的数据够count个，
+        // 则发射这组数据，并传递错误通知。如果当前缓存的数据不够count个，则不发射当前缓存的数据，
+        // 直接传递错误通知
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                for (int j = 1; j <= 11; j++) {
+                    emitter.onNext(j);
+                    if (j == 10) {
+                        emitter.onError(new Throwable("emit a error"));
+                    }
+                }
+                emitter.onComplete();
+            }
+        }).buffer(2, 4)
+                .subscribe(new Consumer<List<Integer>>() {
+                    @Override
+                    public void accept(List<Integer> integers) throws Exception {
+                        Log.e(TAG, "accept: ");
+                        for (Integer integer : integers) {
+                            Log.e(TAG, "accept: integer=" + integer);
+                        }
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG, "accept: " + throwable);
+                    }
+                });
+```
+* buffer(ObservableSource<B> boundary, final int initialCapacity)
+```
+  Observable.interval(100, TimeUnit.MILLISECONDS)
+                .take(100)
+                //第二个参数 initialCapacity 表示返回的List的初始容量
+                .buffer(Observable.interval(250, TimeUnit.MILLISECONDS),6)
+                .subscribe(new Consumer<List<Long>>() {
+                    @Override
+                    public void accept(List<Long> longs) throws Exception {
+                        Log.e(TAG, "accept: ");
+                        for (Long integer : longs) {
+                            Log.e(TAG, "accept: integer=" + integer);
+                        }
+                    }
+                });
+                
+```

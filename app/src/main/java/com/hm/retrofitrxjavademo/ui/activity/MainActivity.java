@@ -21,6 +21,9 @@ public class MainActivity extends BaseActivity {
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btn_test_rxjava_operator:
+                RxJavaOperatorActivity.launch(this);
+                break;
             case R.id.btn_upload_file_activity:
                 break;
             case R.id.btn_upload_okhttp_activity:
@@ -31,13 +34,13 @@ public class MainActivity extends BaseActivity {
             case R.id.btn_only_retrofit:
                 OnlyRetrofitActivity.launch(this);
                 break;
+            case R.id.btn_source_code:
+                RxJava2Activity.launch(this);
+                break;
             default:
                 break;
         }
 
     }
 
-    public void launchRxJava2(View view) {
-        RxJava2Activity.launch(this);
-    }
 }

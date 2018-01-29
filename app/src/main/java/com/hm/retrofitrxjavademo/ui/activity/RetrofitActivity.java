@@ -95,7 +95,7 @@ public class RetrofitActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(nowWeatherBean -> {
                             textResult.setText(nowWeatherBean.getResult().getCitynm());
-                            Log.e(tag, nowWeatherBean.getResult().getCitynm());
+                            Log.e(TAG, nowWeatherBean.getResult().getCitynm());
                         }, e -> Toast.makeText(RetrofitActivity.this, "error" + e.getMessage(), Toast.LENGTH_SHORT).show(),
                         () -> Log.e("onComplete", "onComplete"));*/
     }
@@ -227,15 +227,15 @@ public class RetrofitActivity extends AppCompatActivity {
                     @Override
                     public void call(Boolean aBoolean) {
                         if (aBoolean) {
-                            Log.e(tag, "保存成功");
+                            Log.e(TAG, "保存成功");
                         } else {
-                            Log.e(tag, "保存失败");
+                            Log.e(TAG, "保存失败");
                         }
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Log.e(tag, "保存失败" + throwable.getMessage());
+                        Log.e(TAG, "保存失败" + throwable.getMessage());
                         Toast.makeText(RetrofitActivity.this, "保存失败", Toast.LENGTH_SHORT).show();
                     }
                 });*/
