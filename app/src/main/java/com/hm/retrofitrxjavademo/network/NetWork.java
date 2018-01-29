@@ -3,7 +3,7 @@ package com.hm.retrofitrxjavademo.network;
 import android.util.Log;
 
 import com.hm.retrofitrxjavademo.App;
-import com.hm.retrofitrxjavademo.model.HttpResult;
+import com.hm.retrofitrxjavademo.util.NetWorkUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -21,12 +24,9 @@ import okhttp3.Response;
 import okio.Buffer;
 import okio.BufferedSource;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import rx.Observable;
-import rx.Subscriber;
 
-import static com.hm.retrofitrxjavademo.RxJavaActivity.tag;
 
 /**
  * Created by Administrator on 2016/9/9.
@@ -35,12 +35,14 @@ public class NetWork {
 
     private static final long CACHE_SIZE = 100 * 1024 * 1024;
     private static API api;
+    private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
-    private static OkHttpClient dpwnLoadHttpClient;
 
+    private static final String TAG = "NetWork";
     //private static final String BASE_URL = "https://api.heweather.com/x3/";
 
     private static final String BASE_URL = "http://api.k780.com:88";
+    private static final String UPLOAD_FILE_BASE_URL = "http://api.k780.com:88";
 
     public static API getApi() {
         if (api == null) {
@@ -49,11 +51,25 @@ public class NetWork {
                     .client(okHttpClient)
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
             api = retrofit.create(API.class);
         }
         return api;
+    }
+
+    public static UpLoadFileApi getUpLoadFileApi() {
+        if (upLoadFileApi == null) {
+            initClient();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .client(okHttpClient)
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build();
+            upLoadFileApi = retrofit.create(UpLoadFileApi.class);
+        }
+        return upLoadFileApi;
     }
 
     /**
@@ -92,31 +108,38 @@ public class NetWork {
      * @return
      */
     public static <T> Observable<T> flatResponse(final HttpResult<T> response) {
-        return Observable.create(new Observable.OnSubscribe<T>() {
-
+        /*return Observable.create((e) -> {
+            if (response.isSuccess()) {
+                if (!e.isDisposed()) {
+                    e.onNext(response.data);
+                }
+            } else {
+                if (!e.isDisposed()) {
+                    e.onError(new APIException(response.resultCode, response.resultMessage));
+                }
+                return;
+            }
+            if (!e.isDisposed()) {
+                e.onComplete();
+            }
+        });*/
+        return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void call(Subscriber<? super T> subscriber) {
+            public void subscribe(ObservableEmitter<T> e) throws Exception {
                 if (response.isSuccess()) {
-                    if (!subscriber.isUnsubscribed()) {
-                        subscriber.onNext(response.data);
-                    }
+                    e.onNext(response.data);
                 } else {
-                    if (!subscriber.isUnsubscribed()) {
-                        subscriber.onError(new APIException(response.resultCode, response.resultMessage));
-                    }
+                    e.onError(new APIException(response.resultCode, response.resultMessage));
                     return;
                 }
-
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onCompleted();
-                }
+                e.onComplete();
             }
         });
     }
 
 
     /**
-     * 自定义异常，当接口返回的{link Response#code}不为{link Constant#OK}时，需要跑出此异常
+     * 自定义异常，当接口返回的{link Response#code}不为{link Constant#OK}时，需要抛出此异常
      * eg：登陆时验证码错误；参数为传递等
      */
     public static class APIException extends Exception {
@@ -144,9 +167,9 @@ public class NetWork {
                 request.body().writeTo(buffer);
             }
             String query = request.url().query();
-            Log.e(tag, "request path-->" + request.url());
-            Log.e(tag, "request query-->" + query);
-            Log.e(tag, "request body" + buffer.readUtf8());
+            Log.e(TAG, "request path-->" + request.url());
+            Log.e(TAG, "request query-->" + query);
+            Log.e(TAG, "request body" + buffer.readUtf8());
             //没有网络就读取本地缓存的数据
             if (!NetWorkUtil.isConnected()) {
                 request = request.newBuilder()
@@ -161,8 +184,8 @@ public class NetWork {
             Response originalResponse = chain.proceed(request);
             BufferedSource source = originalResponse.body().source();
             source.request(Long.MAX_VALUE);//不加这句打印不出来
-//            Log.e(tag, "response" + source.buffer().clone().readUtf8());
-            // Log.e(tag, "request response" + originalResponse.body().string());
+//            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
+            // Log.e(TAG, "request response" + originalResponse.body().string());
             Response response;
             if (NetWorkUtil.isConnected()) {
                 //有网的时候读接口上的@Headers里的配置，你可以在这里进行统一的设置(注掉部分)
@@ -173,7 +196,7 @@ public class NetWork {
                         .removeHeader("Pragma")
                         .build();
 
-                Log.e(tag, "request response head" + response.headers());
+                Log.e(TAG, "request response head" + response.headers());
                 return response;
             } else {
                 //没网络的时候保存6分钟
@@ -182,7 +205,7 @@ public class NetWork {
                         .header("Cache-Control", "public, only-if-cached, max-age=" + maxAge)//only-if-cached:(仅为请求标头)请求:告知缓存者,我希望内容来自缓存，我并不关心被缓存响应,是否是新鲜的.
                         .removeHeader("Pragma")//移除pragma消息头，移除它的原因是因为pragma也是控制缓存的一个消息头属性
                         .build();
-                Log.e(tag, "request response head" + response.headers());
+                Log.e(TAG, "request response head" + response.headers());
                 return response;
             }
         }
