@@ -23,6 +23,14 @@
             android:text="@string/test_rxjava_operator" />
 
         <Button
+            android:id="@+id/btn_retrofit_rxjava"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:textAllCaps="false"
+            android:text="@string/retrofit_rxjava" />
+
+        <Button
             android:id="@+id/btn_upload_file_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

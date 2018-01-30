@@ -4,6 +4,7 @@ package com.hm.retrofitrxjavademo.network;
 import com.hm.retrofitrxjavademo.model.MovieEntity;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -47,8 +48,11 @@ public interface API {
     //@GET("/")
     //Observable<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map);
 
-    @GET("/")
-    Observable<HttpResult<NowWeatherBean>> testNowWeather(@QueryMap Map<String, Object> map);
+    @GET
+    Observable<HttpResult<NowWeatherBean>> getNowWeather(@Url String url, @QueryMap Map<String, Object> map);
+
+    @GET
+    Observable<HttpResult<List<NowWeatherBean>>> getHistoryWeather(@Url String url, @QueryMap Map<String, Object> map);
 
     @GET("https://api.douban.com/v2/movie/top250")
     Observable<MovieEntity> getTopMovie(@Query("start") int start, @Query("count") int count);
@@ -66,22 +70,22 @@ public interface API {
     Observable<ResponseBody> downloadFile(@Url String fileUrl);
 
     @GET("/")
-    Call<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map);
+    Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
     /**添加头信息
      @GET("/")
      //添加多个头部
      @Headers({"Accept-Encoding: gzip, deflate", "Accept-Language: zh-CN"})
-     Call<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map);
+     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
      //添加一个头部信息
      @GET("/")
      @Header("Accept-Encoding: gzip, deflate")
-     Call<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map);
+     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
      @GET("/")
      //动态添加头部信息
-     Call<NowWeatherBean> getNowWeather(@QueryMap Map<String, Object> map, @Header("Accept-Language") String lang);
+     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map, @Header("Accept-Language") String lang);
      */
 }
 

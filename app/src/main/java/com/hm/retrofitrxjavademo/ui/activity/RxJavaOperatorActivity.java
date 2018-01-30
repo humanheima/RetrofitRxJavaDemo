@@ -1012,7 +1012,7 @@ public class RxJavaOperatorActivity extends AppCompatActivity {
      */
 
     public void example3() {
-        just(1, 2, 3, 4)
+        Observable.just(1, 2, 3, 4)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Integer>() {

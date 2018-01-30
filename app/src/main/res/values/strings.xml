@@ -31,4 +31,8 @@
     <string name="concat">concat</string>
     <string name="throttlewithtimeout">throttleWithTimeOut</string>
     <string name="rxjava2_source_code">RxJava2 源码</string>
+    <string name="retrofit_rxjava">retrofit RxJava</string>
+    <string name="get_movie">豆瓣电影top250</string>
+    <string name="get_today_weather">获取今天的天气</string>
+    <string name="get_history_weather">获取历史天气信息</string>
 </resources>

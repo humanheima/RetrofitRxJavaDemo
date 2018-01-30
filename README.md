@@ -34,7 +34,7 @@ RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-dat
 MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
 ```
 
-* Disposable
+* disposable
 
 ```
 /**
@@ -189,4 +189,35 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
                     }
                 });
                 
+```
+* compose 
+```
+ /**
+     * 使用compose复用操作符的例子
+     * {@link NetWork#applySchedulers()}
+     */
+    public void getNowWeather(View view) {
+        map = new HashMap();
+        //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
+        map.put("app", "weather.today");
+        map.put("weaid", 1);
+        map.put("appkey", "10003");
+        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
+        map.put("format", "json");
+        NetWork.getApi().testNowWeather(map)
+                .compose(NetWork.applySchedulers())
+                .subscribe(new Consumer<NowWeatherBean>() {
+                    @Override
+                    public void accept(NowWeatherBean bean) throws Exception {
+                        Log.e(TAG, bean.getCitynm());
+                        binding.textWeatherResult.setText(bean.toString());
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG, "accept: error" + throwable.getMessage());
+                    }
+                });
+    }
+
 ```

@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.hm.retrofitrxjavademo.R;
 
 /**
- * Created by Administrator on 2017/1/10.
+ * Created by dumingwei on 2017/1/10.
  */
 public class LoadingDialog extends ProgressDialog {
 
@@ -34,7 +34,7 @@ public class LoadingDialog extends ProgressDialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_custom);
         setCanceledOnTouchOutside(false);
-        textContent = (TextView) findViewById(R.id.text_dialog);
+        textContent = findViewById(R.id.text_dialog);
         if (!TextUtils.isEmpty(content)) {
             textContent.setText(content);
         }

@@ -15,6 +15,11 @@ import javax.net.ssl.SSLSession;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -29,7 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
- * Created by Administrator on 2016/9/9.
+ * Created by dumingwei on 2016/9/9.
  */
 public class NetWork {
 
@@ -47,13 +52,12 @@ public class NetWork {
     public static API getApi() {
         if (api == null) {
             initClient();
-            Retrofit retrofit = new Retrofit.Builder()
+            api = new Retrofit.Builder()
                     .client(okHttpClient)
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build();
-            api = retrofit.create(API.class);
+                    .build().create(API.class);
         }
         return api;
     }
@@ -107,34 +111,60 @@ public class NetWork {
      * @param <T>
      * @return
      */
-    public static <T> Observable<T> flatResponse(final HttpResult<T> response) {
-        /*return Observable.create((e) -> {
-            if (response.isSuccess()) {
-                if (!e.isDisposed()) {
-                    e.onNext(response.data);
-                }
-            } else {
-                if (!e.isDisposed()) {
-                    e.onError(new APIException(response.resultCode, response.resultMessage));
-                }
-                return;
-            }
-            if (!e.isDisposed()) {
-                e.onComplete();
-            }
-        });*/
+    private static <T> Observable<T> flatResponse(final HttpResult<T> response) {
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
             public void subscribe(ObservableEmitter<T> e) throws Exception {
-                if (response.isSuccess()) {
+                if (response.getResultCode() == 1 || response.getSuccess() == 1) {
                     e.onNext(response.data);
+                    e.onComplete();
                 } else {
-                    e.onError(new APIException(response.resultCode, response.resultMessage));
-                    return;
+                    e.onError(new APIException(response.getResultCode(), response.getResultMessage()));
                 }
-                e.onComplete();
             }
         });
+    }
+
+    //实例化一个ObservableTransformer 不用每次都创建一个实例
+    private static final ObservableTransformer transform = new ObservableTransformer() {
+        @Override
+        public ObservableSource apply(Observable upstream) {
+            return upstream.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(new Function() {
+                        @Override
+                        public Object apply(Object response) throws Exception {
+                            return flatResponse(((HttpResult<Object>) response));
+                        }
+                    });
+        }
+    };
+
+    /**
+     * 使用ObservableTransformer 来复用操作符
+     * <p>
+     * .subscribeOn(Schedulers.io())
+     * .observeOn(AndroidSchedulers.mainThread())
+     *
+     * @param <T> 要返回的数据类型
+     * @return T
+     */
+    public static <T> ObservableTransformer<HttpResult<T>, T> applySchedulers() {
+        /*return new ObservableTransformer<HttpResult<T>, T>() {
+            @Override
+            public ObservableSource<T> apply(Observable<HttpResult<T>> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .flatMap(new Function<HttpResult<T>, ObservableSource<T>>() {
+                            @Override
+                            public ObservableSource<T> apply(HttpResult<T> tHttpResult) throws Exception {
+                                return flatResponse(tHttpResult);
+                            }
+                        });
+            }
+        };*/
+        return ((ObservableTransformer<HttpResult<T>, T>) transform);
     }
 
 
@@ -184,7 +214,7 @@ public class NetWork {
             Response originalResponse = chain.proceed(request);
             BufferedSource source = originalResponse.body().source();
             source.request(Long.MAX_VALUE);//不加这句打印不出来
-//            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
+            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
             // Log.e(TAG, "request response" + originalResponse.body().string());
             Response response;
             if (NetWorkUtil.isConnected()) {
@@ -195,8 +225,7 @@ public class NetWork {
                         .header("Cache-Control", "max-age=30")//有网络的时候请求结果保存30秒
                         .removeHeader("Pragma")
                         .build();
-
-                Log.e(TAG, "request response head" + response.headers());
+                //Log.e(TAG, "request response head" + response.headers());
                 return response;
             } else {
                 //没网络的时候保存6分钟
@@ -205,7 +234,7 @@ public class NetWork {
                         .header("Cache-Control", "public, only-if-cached, max-age=" + maxAge)//only-if-cached:(仅为请求标头)请求:告知缓存者,我希望内容来自缓存，我并不关心被缓存响应,是否是新鲜的.
                         .removeHeader("Pragma")//移除pragma消息头，移除它的原因是因为pragma也是控制缓存的一个消息头属性
                         .build();
-                Log.e(TAG, "request response head" + response.headers());
+                //Log.e(TAG, "request response head" + response.headers());
                 return response;
             }
         }

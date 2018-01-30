@@ -10,13 +10,19 @@ import com.google.gson.annotations.SerializedName;
 
 public class HttpResult<T> {
 
-    public int resultCode;
-    public String resultMessage;
-    @SerializedName("body")
+    private int resultCode;
+    private String resultMessage;
+    @SerializedName("result")
     public T data;
 
-    public boolean isSuccess() {
-        return resultCode == 1;
+    private int success;
+
+    public int getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(int success) {
+        this.success = success;
     }
 
     public T getData() {
