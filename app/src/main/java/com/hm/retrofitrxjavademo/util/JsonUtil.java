@@ -1,6 +1,7 @@
 package com.hm.retrofitrxjavademo.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Created by dumingwei on 2017/3/2.
@@ -9,9 +10,12 @@ public class JsonUtil {
 
     private static JsonUtil jsonUtil;
     private static Gson gson;
+    private static GsonBuilder gb;
 
     private JsonUtil() {
-        gson = new Gson();
+        gb = new GsonBuilder();
+        gb.disableHtmlEscaping();
+        gson = gb.create();
     }
 
     public static JsonUtil getInstance() {
@@ -25,7 +29,12 @@ public class JsonUtil {
         return jsonUtil;
     }
 
+    public String toJson(Object object) {
+        return gson.toJson(object);
+    }
+
     public <T> T toObject(String json, Class<T> classOfT) {
         return gson.fromJson(json, classOfT);
     }
+
 }

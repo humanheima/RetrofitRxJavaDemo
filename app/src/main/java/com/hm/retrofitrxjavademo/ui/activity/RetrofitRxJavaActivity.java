@@ -17,9 +17,15 @@ import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
-import com.hm.retrofitrxjavademo.model.MovieEntity;
+import com.hm.retrofitrxjavademo.model.HistoryWeatherBean;
+import com.hm.retrofitrxjavademo.model.MovieBean;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
+import com.hm.retrofitrxjavademo.model.PM25;
 import com.hm.retrofitrxjavademo.network.NetWork;
+import com.hm.retrofitrxjavademo.network.api_entity.HistoryWeatherEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.MovieEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.NowWeatherEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.PM25Entity;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.BufferedInputStream;
@@ -50,7 +56,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaBinding> {
 
-    private Map<String, Object> map;
+    private HashMap<String, Object> map;
     // private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/20AD322F5D49B9F649A70C4A3083D8D2.apk?mkey=58758c694bc7812a&f=d588&c=0&fsname=com.xunao.wanfeng_1.1_4.apk&csr=4d5s&p=.apk";
     private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/5D7CD21498D9433BD2F362BF06068C07.apk?mkey=58d2100bacc7802a&f=e381&c=0&fsname=com.moji.mjweather_6.0209.02_6020902.apk&csr=1bbd&p=.apk";
 
@@ -74,18 +80,23 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         //retrofitDownload();
     }
 
+    public void getMovie(View view) {
+        showLoading();
+        compositeDisposable.add(NetWork.getDataList(new MovieEntity(1, 1), MovieBean.class)
+                .subscribeWith(newObserver(new Consumer<List<MovieBean>>() {
+                    @Override
+                    public void accept(List<MovieBean> movieBeans) throws Exception {
+                       viewBind.textMovieResult.setText(movieBeans.toString());
+                    }
+                })));
+    }
+
     /**
      * 使用compose复用操作符的例子
      * {@link NetWork#applySchedulers()}
      */
     public void getNowWeather(View view) {
-        map = new HashMap();
         //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
-        map.put("app", "weather.today");
-        map.put("weaid", 1);
-        map.put("appkey", "10003");
-        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
-        map.put("format", "json");
         showLoading();
         DisposableObserver<NowWeatherBean> observer = newObserver(new Consumer<NowWeatherBean>() {
             @Override
@@ -93,43 +104,40 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
                 viewBind.textWeatherResult.setText(bean.toString());
             }
         });
-        NetWork.getApi().getNowWeather("http://api.k780.com:88/", map)
-                .compose(NetWork.applySchedulers())
+        NetWork.getData(new NowWeatherEntity("weather.today", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), NowWeatherBean.class)
+                .subscribe(observer);
+        compositeDisposable.add(observer);
+    }
+
+    public void getPM(View view) {
+        //http://api.k780.com:88/?app=weather.pm25&weaid=1&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
+        showLoading();
+        DisposableObserver<PM25> observer = newObserver(new Consumer<PM25>() {
+            @Override
+            public void accept(PM25 bean) throws Exception {
+                viewBind.textPmResult.setText(bean.toString());
+            }
+        });
+        NetWork.getData(new PM25Entity("weather.pm25", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), PM25.class)
                 .subscribe(observer);
         compositeDisposable.add(observer);
     }
 
     public void getHistoryWeather(View view) {
-        map = new HashMap();
-        map.put("app", "weather.history");
-        map.put("weaid", 100);
-        map.put("appkey", "10003");
-        map.put("date", "2018-01-30");
-        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
-        map.put("format", "json");
         showLoading();
-        compositeDisposable.add(NetWork.getApi().getHistoryWeather("http://api.k780.com:88/", map)
-                .compose(NetWork.applySchedulers())
-                .subscribeWith(newObserver(new Consumer<List<NowWeatherBean>>() {
-                    @Override
-                    public void accept(List<NowWeatherBean> beans) throws Exception {
-                        viewBind.textHistoryWeatherResult.setText(beans.toString());
-
-                    }
-                })));
-    }
-
-    public void getMovie(View view) {
-        showLoading();
-        compositeDisposable.add(NetWork.getApi().getTopMovie(0, 2)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(newObserver(new Consumer<MovieEntity>() {
-                    @Override
-                    public void accept(MovieEntity movieEntity) throws Exception {
-                        viewBind.textMovieResult.setText(movieEntity.getTitle());
-                    }
-                })));
+        compositeDisposable.add(
+                NetWork.getDataList(new HistoryWeatherEntity("weather.history",
+                        100, "2018-01-30", "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4",
+                        "json"), HistoryWeatherBean.class)
+                        .subscribeWith(newObserver(new Consumer<List<HistoryWeatherBean>>() {
+                            @Override
+                            public void accept(List<HistoryWeatherBean> beans) throws Exception {
+                                viewBind.textHistoryWeatherResult.setText(beans.toString());
+                            }
+                        }))
+        );
     }
 
     @Override

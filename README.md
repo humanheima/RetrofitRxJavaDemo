@@ -221,3 +221,10 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
     }
 
 ```
+* API 接口，统一使用 下面的方法来获取数据
+```
+@GET
+Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Object> map);
+
+```
+ 

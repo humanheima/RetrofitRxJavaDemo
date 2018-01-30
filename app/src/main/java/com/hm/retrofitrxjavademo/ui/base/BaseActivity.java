@@ -71,6 +71,7 @@ public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatA
 
             @Override
             public void onError(Throwable e) {
+                e.printStackTrace();
                 Log.e(TAG, "onError: " + e.getMessage());
                 hideLoading();
                 ToastUtil.toast(e.getMessage());

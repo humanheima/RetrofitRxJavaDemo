@@ -1,12 +1,21 @@
 package com.hm.retrofitrxjavademo.network;
 
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.JsonArray;
 import com.hm.retrofitrxjavademo.App;
+import com.hm.retrofitrxjavademo.network.api_entity.BaseEntity;
+import com.hm.retrofitrxjavademo.util.JsonUtil;
 import com.hm.retrofitrxjavademo.util.NetWorkUtil;
+
+import org.json.JSONArray;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -39,6 +48,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class NetWork {
 
     private static final long CACHE_SIZE = 100 * 1024 * 1024;
+    public static final String EMPTY_JSON_ARRAY = "[]";
     private static API api;
     private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
@@ -126,6 +136,7 @@ public class NetWork {
     }
 
     //实例化一个ObservableTransformer 不用每次都创建一个实例
+    @SuppressWarnings("unchecked")
     private static final ObservableTransformer transform = new ObservableTransformer() {
         @Override
         public ObservableSource apply(Observable upstream) {
@@ -149,6 +160,7 @@ public class NetWork {
      * @param <T> 要返回的数据类型
      * @return T
      */
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<HttpResult<T>, T> applySchedulers() {
         /*return new ObservableTransformer<HttpResult<T>, T>() {
             @Override
@@ -165,6 +177,62 @@ public class NetWork {
             }
         };*/
         return ((ObservableTransformer<HttpResult<T>, T>) transform);
+    }
+
+    /**
+     * 获取的数据结构为 JsonObject
+     *
+     * @param entity    请求参数
+     * @param classType 返回的数据结构类型
+     * @param <T>
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Observable<T> getData(BaseEntity entity, Class<T> classType) {
+        return getApi()
+                .getData(entity.getUrl(), entity.getParams())
+                .compose(applySchedulers())
+                .map(new Function<Object, T>() {
+                    @Override
+                    public T apply(Object o) throws Exception {
+                        String json = JsonUtil.getInstance().toJson(o);
+                        if (TextUtils.isEmpty(json)) {
+                            return null;
+                        }
+                        return JsonUtil.getInstance().toObject(json, classType);
+                    }
+                });
+    }
+
+    /**
+     * 获取的数据结构为 JsonArray
+     *
+     * @param entity    请求参数
+     * @param classType 返回的数据结构类型
+     * @param <T>
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Observable<List<T>> getDataList(BaseEntity entity, Class<T> classType) {
+        return getApi()
+                .getData(entity.getUrl(), entity.getParams())
+                .compose(applySchedulers())
+                .map(new Function<Object, List<T>>() {
+                    @Override
+                    public List<T> apply(Object o) throws Exception {
+                        String json = JsonUtil.getInstance().toJson(o);
+                        Log.e(TAG, "getDataList json=:" + json);
+                        if (TextUtils.isEmpty(json) || EMPTY_JSON_ARRAY.equals(json)) {
+                            return new ArrayList<>(0);
+                        }
+                        ArrayList<T> list = new ArrayList<>();
+                        JSONArray jsonArray = new JSONArray(json);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            list.add(JsonUtil.getInstance().toObject(jsonArray.get(i).toString(), classType));
+                        }
+                        return list;
+                    }
+                });
     }
 
 

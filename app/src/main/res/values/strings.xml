@@ -35,4 +35,5 @@
     <string name="get_movie">豆瓣电影top250</string>
     <string name="get_today_weather">获取今天的天气</string>
     <string name="get_history_weather">获取历史天气信息</string>
+    <string name="pm2_5">获取PM2.5</string>
 </resources>
