@@ -4,15 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityRxJavaOperatorBinding;
 import com.hm.retrofitrxjavademo.model.Animal;
 import com.hm.retrofitrxjavademo.model.Dog;
+import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -46,8 +45,7 @@ import static io.reactivex.Observable.just;
  * RxJava 操作符
  */
 
-public class RxJavaOperatorActivity extends AppCompatActivity {
-
+public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorBinding> {
 
     public final static String TAG = "RxJavaOperatorActivity";
     private Observer<Integer> observer;
@@ -58,10 +56,12 @@ public class RxJavaOperatorActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rx_java_operator);
-        ButterKnife.bind(this);
+    protected int bindLayout() {
+        return R.layout.activity_rx_java_operator;
+    }
+
+    @Override
+    protected void initData() {
         observer = new Observer<Integer>() {
             @Override
             public void onSubscribe(Disposable d) {

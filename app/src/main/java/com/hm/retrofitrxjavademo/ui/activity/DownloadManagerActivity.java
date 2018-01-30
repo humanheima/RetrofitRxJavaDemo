@@ -15,12 +15,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityDownloadManagerBinding;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.File;
@@ -28,28 +26,18 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import butterknife.BindView;
-import butterknife.OnClick;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * 使用系统自带的DownloadManager下载
  */
-public class DownloadManagerActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
+public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManagerBinding> implements EasyPermissions.PermissionCallbacks {
 
     private static final String TAG = "DownloadManagerActivity";
     public static final String PROGRESS = "progress";
     private static final String[] PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
     public static final int REQUEST_CODE = 14;
-    @BindView(R.id.btn_start)
-    Button btnStart;
-    @BindView(R.id.btn_cancel)
-    Button btnCancel;
-    @BindView(R.id.progressBar)
-    ProgressBar progressBar;
-    @BindView(R.id.textProgress)
-    TextView textProgress;
     private String wifiUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/DF6B2FB4A4628C2870C710046C231348.apk?mkey=58d4b294acc7802a&f=8e5d&c=0&fsname=com.snda.wifilocating_4.1.88_3108.apk&csr=1bbd&p=.apk";
     private long id;
     private DownloadManager downloadManager;
@@ -63,8 +51,8 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
         public void handleMessage(Message msg) {
             Bundle bundle = msg.getData();
             int progress = bundle.getInt(PROGRESS);
-            progressBar.setProgress(progress);
-            textProgress.setText(String.valueOf(progress) + "%");
+            viewBind.progressBar.setProgress(progress);
+            viewBind.textProgress.setText(String.valueOf(progress) + "%");
             if (progress == 100) {
                 timer.cancel();
                 install(downloadPath);
@@ -84,11 +72,10 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
 
     @Override
     protected void initData() {
-        progressBar.setMax(100);
+        viewBind.progressBar.setMax(100);
         query = new DownloadManager.Query();
     }
 
-    @OnClick({R.id.btn_start, R.id.btn_cancel})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_start:
@@ -100,10 +87,10 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
                 break;
             case R.id.btn_cancel:
                 cancelDownload();
-                btnStart.setClickable(true);
+                viewBind.btnStart.setClickable(true);
                 timer.cancel();
-                textProgress.setText("");
-                progressBar.setProgress(0);
+                viewBind.textProgress.setText("");
+                viewBind.progressBar.setProgress(0);
                 break;
         }
     }
@@ -116,7 +103,7 @@ public class DownloadManagerActivity extends BaseActivity implements EasyPermiss
                 queryProgress();
             }
         };
-        btnStart.setClickable(false);
+        viewBind.btnStart.setClickable(false);
         downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(wifiUrl));
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "wifi.apk");

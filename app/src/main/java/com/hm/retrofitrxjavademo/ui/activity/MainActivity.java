@@ -2,19 +2,18 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.Manifest;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityMainBinding;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.util.List;
 
-import butterknife.OnClick;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
+public class MainActivity extends BaseActivity<ActivityMainBinding> implements EasyPermissions.PermissionCallbacks {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PERMISSION = 100;
@@ -37,9 +36,8 @@ public class MainActivity extends BaseActivity implements EasyPermissions.Permis
             case R.id.btn_retrofit_rxjava:
                 RetrofitRxJavaActivity.launch(this);
                 break;
-            case R.id.btn_upload_file_activity:
-                break;
             case R.id.btn_upload_okhttp_activity:
+                OkHttp3DownloadActivity.launch(this);
                 break;
             case R.id.btn_user_DownloadManager:
                 DownloadManagerActivity.launch(this);

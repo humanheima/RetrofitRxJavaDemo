@@ -9,15 +9,8 @@ import android.util.Log;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
 
-import butterknife.ButterKnife;
-import io.reactivex.Observer;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.internal.disposables.ListCompositeDisposable;
-import io.reactivex.internal.functions.Functions;
-import io.reactivex.internal.observers.LambdaObserver;
 import io.reactivex.observers.DisposableObserver;
 
 /**

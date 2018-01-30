@@ -1,217 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_rx_java"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.activity.RxJavaOperatorActivity">
+<layout>
 
-    <LinearLayout
+    <data></data>
+
+    <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_rx_java"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        tools:context=".ui.activity.RxJavaOperatorActivity">
 
-        <Button
-            android:id="@+id/btn_create"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/create"
-            android:textAllCaps="false" />
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_defer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/defer"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_create"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/create"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_from"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/from"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_defer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/defer"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_interval"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/interval"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_from"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/from"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_range"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/range"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_interval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/interval"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_repeat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/repeat"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/range"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_repeat_when"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/repeat_when"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_repeat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/repeat"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_retry_when"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/retry_when"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_repeat_when"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/repeat_when"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_buffer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/buffer"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_retry_when"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/retry_when"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_flatMap"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/flatmap"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_buffer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/buffer"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_group_by"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/group_by"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_flatMap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/flatmap"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_scan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/scan"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_group_by"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/group_by"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_debounce"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/debounce"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_scan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/scan"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_debounce"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/debounce"
+                android:textAllCaps="false" />
 
 
-        <Button
-            android:id="@+id/btn_sample"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/sample"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_sample"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/sample"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_skip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/skip"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_skip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/skip"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_combine_latest"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/combinelatest"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_combine_latest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/combinelatest"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_zip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/zip"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_zip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/zip"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_use_catch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/use_catch"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_use_catch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/use_catch"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_retry"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/retry"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_retry"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/retry"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_delay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/delay"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_delay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/delay"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_do"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/use_do"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_do"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/use_do"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_to"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/use_to"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_to"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/use_to"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_reduce"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/reduce"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_reduce"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/reduce"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_concat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/concat"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_concat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/concat"
+                android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/btn_throttle_with_timeout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="click"
-            android:text="@string/throttlewithtimeout"
-            android:textAllCaps="false" />
+            <Button
+                android:id="@+id/btn_throttle_with_timeout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/throttlewithtimeout"
+                android:textAllCaps="false" />
 
-    </LinearLayout>
+        </LinearLayout>
 
-</android.support.v4.widget.NestedScrollView>
+    </android.support.v4.widget.NestedScrollView>
+</layout>
+
