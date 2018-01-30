@@ -26,7 +26,7 @@ public class LoadingDialog extends ProgressDialog {
     }
 
     public LoadingDialog(Context context, int theme) {
-        super(context, R.style.LoadingDialog);
+        super(context, theme);
     }
 
     @Override
