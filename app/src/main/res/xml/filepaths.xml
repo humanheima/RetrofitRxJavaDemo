@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--代表外部存储区域的根目录下的文件 Environment.getExternalStorageDirectory()/DCIM/camerademo目录-->
-    <external-path name="hm_download" path="Download" />
+    <!--代表外部存储区域的根目录下的文件 Environment.getExternalStorageDirectory()/Download目录-->
+    <!--/storage/emulated/0/Download-->
+    <external-path
+        name="hm_download"
+        path="Download" />
+    <!--代表 context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath()-->
+    <!--/storage/emulated/0/Android/data/com.hm.retrofitrxjavademo/files/Download-->
+    <external-files-path
+        name="hm_external_download"
+        path="Download" />
+
 </paths>

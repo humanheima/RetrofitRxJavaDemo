@@ -3,6 +3,9 @@ package com.hm.retrofitrxjavademo.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -12,18 +15,19 @@ import com.hm.retrofitrxjavademo.okhttpdownload.DownLoadObserver;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownloadInfo;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownloadManager;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
+import com.hm.retrofitrxjavademo.util.ToastUtil;
 
 import java.io.File;
 
 
-public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3DownloadBinding> {
+public class OkHttpDownloadActivity extends BaseActivity<ActivityOkHttp3DownloadBinding> {
 
-    private String wifiUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/DF6B2FB4A4628C2870C710046C231348.apk?mkey=58d4b294acc7802a&f=8e5d&c=0&fsname=com.snda.wifilocating_4.1.88_3108.apk&csr=1bbd&p=.apk";
-    private String bookUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/88CB555BDF39D8731913D084F9A9C848.apk?mkey=58d4b256acc7802a&f=ac0b&c=0&fsname=com.qq.reader_6.3.9.888_96.apk&csr=1bbd&p=.apk";
-    private String weatherUrl = "http://112.65.222.35/imtt.dd.qq.com/16891/A46129A45C18D0F7D8C833904621CADD.apk?mkey=58d4b3d0acc7802a&f=ac0b&c=0&fsname=com.moji.mjweather_6.0209.02_6020902.apk&csr=1bbd&p=.apk";
+    private String wifiUrl = "http://imtt.dd.qq.com/16891/7595C75AAF71D6B65596B3A99956062C.apk?fsname=com.snda.wifilocating_4.2.53_3183.apk";
+    private String bookUrl = "http://imtt.dd.qq.com/16891/11963AA5E2A9C91F41D2F09C1FD3496C.apk?fsname=com.ss.android.article.news_6.5.7_657.apk";
+    private String weatherUrl = "http://imtt.dd.qq.com/16891/BCF8513AC8C0F123EEF46B91F46004CA.apk?fsname=com.baidu.news_7.0.3.0_7030.apk";
 
     public static void launch(Context context) {
-        Intent intent = new Intent(context, OkHttp3DownloadActivity.class);
+        Intent intent = new Intent(context, OkHttpDownloadActivity.class);
         context.startActivity(intent);
     }
 
@@ -34,7 +38,6 @@ public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3Downloa
 
     @Override
     protected void initData() {
-
     }
 
     public void onClick(View view) {
@@ -49,11 +52,20 @@ public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3Downloa
                     }
 
                     @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e);
+                        ToastUtil.toast(e.getMessage());
+                    }
+
+                    @Override
                     public void onComplete() {
                         if (downloadInfo != null) {
-                            Toast.makeText(OkHttp3DownloadActivity.this,
+                            Toast.makeText(OkHttpDownloadActivity.this,
                                     downloadInfo.getFileName() + "-DownloadComplete",
                                     Toast.LENGTH_SHORT).show();
+                            if (downloadInfo.getFullPath().endsWith(".apk")) {
+                                installApk(downloadInfo.getFullPath());
+                            }
                         }
                     }
                 });
@@ -71,12 +83,20 @@ public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3Downloa
                     }
 
                     @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e);
+                        ToastUtil.toast(e.getMessage());
+                    }
+
+                    @Override
                     public void onComplete() {
                         if (downloadInfo != null) {
-                            Toast.makeText(OkHttp3DownloadActivity.this,
+                            Toast.makeText(OkHttpDownloadActivity.this,
                                     downloadInfo.getFileName() + "-DownloadComplete",
                                     Toast.LENGTH_SHORT).show();
-                            installApk(new File(downloadInfo.getFileName()));
+                            if (downloadInfo.getFullPath().endsWith(".apk")) {
+                                installApk(downloadInfo.getFullPath());
+                            }
                         }
                     }
                 });
@@ -94,11 +114,20 @@ public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3Downloa
                     }
 
                     @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e);
+                        ToastUtil.toast(e.getMessage());
+                    }
+
+                    @Override
                     public void onComplete() {
                         if (downloadInfo != null) {
-                            Toast.makeText(OkHttp3DownloadActivity.this,
+                            Toast.makeText(OkHttpDownloadActivity.this,
                                     downloadInfo.getFileName() + "-DownloadComplete",
                                     Toast.LENGTH_SHORT).show();
+                            if (downloadInfo.getFullPath().endsWith(".apk")) {
+                                installApk(downloadInfo.getFullPath());
+                            }
                         }
                     }
                 });
@@ -106,14 +135,26 @@ public class OkHttp3DownloadActivity extends BaseActivity<ActivityOkHttp3Downloa
             case R.id.main_btn_cancel3:
                 DownloadManager.getInstance().cancel(weatherUrl);
                 break;
+            default:
+                break;
         }
     }
 
-    private void installApk(File file) {
-        Intent intent = new Intent();
-        intent.setAction("android.intent.action.VIEW");
-        intent.addCategory("android.intent.category.DEFAULT");
-        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+    private void installApk(String path) {
+        Log.e(TAG, "installApk: path=" + path);
+        Uri uri;
+        File file = new File(path);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //如果是7.0以上的系统，要使用FileProvider的方式构建Uri
+            uri = FileProvider.getUriForFile(this, "com.hm.retrofitrxjavademo.fileprovider", file);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setDataAndType(uri, "application/vnd.android.package-archive");
+        } else {
+            Log.e(TAG, "installApk: Build.VERSION.SDK_INT=" + Build.VERSION.SDK_INT);
+            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        }
         startActivity(intent);
     }
+
 }

@@ -1,8 +1,6 @@
 package com.hm.retrofitrxjavademo.okhttpdownload;
 
 
-import android.util.Log;
-
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -26,8 +24,4 @@ public abstract class DownLoadObserver implements Observer<DownloadInfo> {
         this.downloadInfo = value;
     }
 
-    @Override
-    public void onError(Throwable e) {
-        Log.e(TAG, e.getMessage());
-    }
 }

@@ -37,7 +37,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
                 RetrofitRxJavaActivity.launch(this);
                 break;
             case R.id.btn_upload_okhttp_activity:
-                OkHttp3DownloadActivity.launch(this);
+                OkHttpDownloadActivity.launch(this);
                 break;
             case R.id.btn_user_DownloadManager:
                 DownloadManagerActivity.launch(this);
