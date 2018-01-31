@@ -2,7 +2,6 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
@@ -12,8 +11,6 @@ import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 import java.util.HashMap;
 
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -50,8 +47,8 @@ public class OnlyRetrofitActivity extends BaseActivity {
         map.put("appkey", 10003);
         map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
         map.put("format", "json");
-        Call<NowWeatherBean> call = api.getNowWeather(map);
-        call.enqueue(new Callback<NowWeatherBean>() {
+        Call<NowWeatherBean> call = api.retrofitGetNowWeather(map);
+        /*call.enqueue(new Callback<NowWeatherBean>() {
             @Override
             public void onResponse(Call<NowWeatherBean> call, Response<NowWeatherBean> response) {
                 Log.d(TAG, response.body().getResult().getCitynm());
@@ -61,6 +58,6 @@ public class OnlyRetrofitActivity extends BaseActivity {
             public void onFailure(Call<NowWeatherBean> call, Throwable t) {
                 Log.d(TAG, t.getMessage());
             }
-        });
+        });*/
     }
 }

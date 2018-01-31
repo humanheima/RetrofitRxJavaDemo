@@ -1,12 +1,21 @@
 package com.hm.retrofitrxjavademo.network;
 
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.JsonArray;
 import com.hm.retrofitrxjavademo.App;
+import com.hm.retrofitrxjavademo.network.api_entity.BaseEntity;
+import com.hm.retrofitrxjavademo.util.JsonUtil;
 import com.hm.retrofitrxjavademo.util.NetWorkUtil;
+
+import org.json.JSONArray;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -15,6 +24,11 @@ import javax.net.ssl.SSLSession;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -29,11 +43,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
- * Created by Administrator on 2016/9/9.
+ * Created by dumingwei on 2016/9/9.
  */
 public class NetWork {
 
     private static final long CACHE_SIZE = 100 * 1024 * 1024;
+    public static final String EMPTY_JSON_ARRAY = "[]";
     private static API api;
     private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
@@ -47,13 +62,12 @@ public class NetWork {
     public static API getApi() {
         if (api == null) {
             initClient();
-            Retrofit retrofit = new Retrofit.Builder()
+            api = new Retrofit.Builder()
                     .client(okHttpClient)
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build();
-            api = retrofit.create(API.class);
+                    .build().create(API.class);
         }
         return api;
     }
@@ -107,34 +121,118 @@ public class NetWork {
      * @param <T>
      * @return
      */
-    public static <T> Observable<T> flatResponse(final HttpResult<T> response) {
-        /*return Observable.create((e) -> {
-            if (response.isSuccess()) {
-                if (!e.isDisposed()) {
-                    e.onNext(response.data);
-                }
-            } else {
-                if (!e.isDisposed()) {
-                    e.onError(new APIException(response.resultCode, response.resultMessage));
-                }
-                return;
-            }
-            if (!e.isDisposed()) {
-                e.onComplete();
-            }
-        });*/
+    private static <T> Observable<T> flatResponse(final HttpResult<T> response) {
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
             public void subscribe(ObservableEmitter<T> e) throws Exception {
-                if (response.isSuccess()) {
+                if (response.getResultCode() == 1 || response.getSuccess() == 1) {
                     e.onNext(response.data);
+                    e.onComplete();
                 } else {
-                    e.onError(new APIException(response.resultCode, response.resultMessage));
-                    return;
+                    e.onError(new APIException(response.getResultCode(), response.getResultMessage()));
                 }
-                e.onComplete();
             }
         });
+    }
+
+    //实例化一个ObservableTransformer 不用每次都创建一个实例
+    @SuppressWarnings("unchecked")
+    private static final ObservableTransformer transform = new ObservableTransformer() {
+        @Override
+        public ObservableSource apply(Observable upstream) {
+            return upstream.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(new Function() {
+                        @Override
+                        public Object apply(Object response) throws Exception {
+                            return flatResponse(((HttpResult<Object>) response));
+                        }
+                    });
+        }
+    };
+
+    /**
+     * 使用ObservableTransformer 来复用操作符
+     * <p>
+     * .subscribeOn(Schedulers.io())
+     * .observeOn(AndroidSchedulers.mainThread())
+     *
+     * @param <T> 要返回的数据类型
+     * @return T
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> ObservableTransformer<HttpResult<T>, T> applySchedulers() {
+        /*return new ObservableTransformer<HttpResult<T>, T>() {
+            @Override
+            public ObservableSource<T> apply(Observable<HttpResult<T>> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .flatMap(new Function<HttpResult<T>, ObservableSource<T>>() {
+                            @Override
+                            public ObservableSource<T> apply(HttpResult<T> tHttpResult) throws Exception {
+                                return flatResponse(tHttpResult);
+                            }
+                        });
+            }
+        };*/
+        return ((ObservableTransformer<HttpResult<T>, T>) transform);
+    }
+
+    /**
+     * 获取的数据结构为 JsonObject
+     *
+     * @param entity    请求参数
+     * @param classType 返回的数据结构类型
+     * @param <T>
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Observable<T> getData(BaseEntity entity, Class<T> classType) {
+        return getApi()
+                .getData(entity.getUrl(), entity.getParams())
+                .compose(applySchedulers())
+                .map(new Function<Object, T>() {
+                    @Override
+                    public T apply(Object o) throws Exception {
+                        String json = JsonUtil.getInstance().toJson(o);
+                        if (TextUtils.isEmpty(json)) {
+                            return null;
+                        }
+                        return JsonUtil.getInstance().toObject(json, classType);
+                    }
+                });
+    }
+
+    /**
+     * 获取的数据结构为 JsonArray
+     *
+     * @param entity    请求参数
+     * @param classType 返回的数据结构类型
+     * @param <T>
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Observable<List<T>> getDataList(BaseEntity entity, Class<T> classType) {
+        return getApi()
+                .getData(entity.getUrl(), entity.getParams())
+                .compose(applySchedulers())
+                .map(new Function<Object, List<T>>() {
+                    @Override
+                    public List<T> apply(Object o) throws Exception {
+                        String json = JsonUtil.getInstance().toJson(o);
+                        Log.e(TAG, "getDataList json=:" + json);
+                        if (TextUtils.isEmpty(json) || EMPTY_JSON_ARRAY.equals(json)) {
+                            return new ArrayList<>(0);
+                        }
+                        ArrayList<T> list = new ArrayList<>();
+                        JSONArray jsonArray = new JSONArray(json);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            list.add(JsonUtil.getInstance().toObject(jsonArray.get(i).toString(), classType));
+                        }
+                        return list;
+                    }
+                });
     }
 
 
@@ -184,7 +282,7 @@ public class NetWork {
             Response originalResponse = chain.proceed(request);
             BufferedSource source = originalResponse.body().source();
             source.request(Long.MAX_VALUE);//不加这句打印不出来
-//            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
+            Log.e(TAG, "response" + source.buffer().clone().readUtf8());
             // Log.e(TAG, "request response" + originalResponse.body().string());
             Response response;
             if (NetWorkUtil.isConnected()) {
@@ -195,8 +293,7 @@ public class NetWork {
                         .header("Cache-Control", "max-age=30")//有网络的时候请求结果保存30秒
                         .removeHeader("Pragma")
                         .build();
-
-                Log.e(TAG, "request response head" + response.headers());
+                //Log.e(TAG, "request response head" + response.headers());
                 return response;
             } else {
                 //没网络的时候保存6分钟
@@ -205,7 +302,7 @@ public class NetWork {
                         .header("Cache-Control", "public, only-if-cached, max-age=" + maxAge)//only-if-cached:(仅为请求标头)请求:告知缓存者,我希望内容来自缓存，我并不关心被缓存响应,是否是新鲜的.
                         .removeHeader("Pragma")//移除pragma消息头，移除它的原因是因为pragma也是控制缓存的一个消息头属性
                         .build();
-                Log.e(TAG, "request response head" + response.headers());
+                //Log.e(TAG, "request response head" + response.headers());
                 return response;
             }
         }

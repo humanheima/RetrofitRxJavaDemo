@@ -1,28 +1,32 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.view.View;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityRetrofitRxJavaBinding;
 import com.hm.retrofitrxjavademo.download.DownLoadProgressListener;
 import com.hm.retrofitrxjavademo.download.DownloadApi;
 import com.hm.retrofitrxjavademo.download.ProgressBean;
 import com.hm.retrofitrxjavademo.download.ProgressHandler;
 import com.hm.retrofitrxjavademo.download.ProgressResponseBody;
+import com.hm.retrofitrxjavademo.model.HistoryWeatherBean;
+import com.hm.retrofitrxjavademo.model.MovieBean;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
-import com.hm.retrofitrxjavademo.network.HttpResult;
+import com.hm.retrofitrxjavademo.model.PM25;
 import com.hm.retrofitrxjavademo.network.NetWork;
-import com.hm.retrofitrxjavademo.widget.LoadingDialog;
+import com.hm.retrofitrxjavademo.network.api_entity.HistoryWeatherEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.MovieEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.NowWeatherEntity;
+import com.hm.retrofitrxjavademo.network.api_entity.PM25Entity;
+import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -32,14 +36,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -52,110 +54,99 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RetrofitActivity extends AppCompatActivity {
+public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaBinding> {
 
-    @BindView(R.id.text_movie_result)
-    TextView textMovieResult;
-    @BindView(R.id.activity_retrofit)
-    ScrollView activityRetrofit;
-    private String tag = getClass().getSimpleName();
-    @BindView(R.id.btn_now_weather)
-    Button btnNowWeather;
-    @BindView(R.id.text_result)
-    TextView textResult;
-    private Map<String, Object> map;
-    private LoadingDialog loadingDialog;
+    private HashMap<String, Object> map;
     // private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/20AD322F5D49B9F649A70C4A3083D8D2.apk?mkey=58758c694bc7812a&f=d588&c=0&fsname=com.xunao.wanfeng_1.1_4.apk&csr=4d5s&p=.apk";
     private String downLoadUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/5D7CD21498D9433BD2F362BF06068C07.apk?mkey=58d2100bacc7802a&f=e381&c=0&fsname=com.moji.mjweather_6.0209.02_6020902.apk&csr=1bbd&p=.apk";
 
+    public static void launch(Context context) {
+        Intent intent = new Intent(context, RetrofitRxJavaActivity.class);
+        context.startActivity(intent);
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_retrofit);
-        ButterKnife.bind(this);
-        loadingDialog = new LoadingDialog(this);
+    protected int bindLayout() {
+        return R.layout.activity_retrofit_rx_java;
     }
 
-    @OnClick(R.id.btn_now_weather)
+    @Override
+    protected void initData() {
+
+    }
+
     public void onClick() {
-        //getMovie();
         //downLoadWeChat(downLoadUrl);
-        retrofitDownload();
+        //retrofitDownload();
     }
 
-    private void getWeather() {
-        map = new HashMap();
+    public void getMovie(View view) {
+        showLoading();
+        compositeDisposable.add(NetWork.getDataList(new MovieEntity(1, 1), MovieBean.class)
+                .subscribeWith(newObserver(new Consumer<List<MovieBean>>() {
+                    @Override
+                    public void accept(List<MovieBean> movieBeans) throws Exception {
+                       viewBind.textMovieResult.setText(movieBeans.toString());
+                    }
+                })));
+    }
+
+    /**
+     * 使用compose复用操作符的例子
+     * {@link NetWork#applySchedulers()}
+     */
+    public void getNowWeather(View view) {
         //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
-        map.put("app", "weather.today");
-        map.put("weaid", 1);
-        map.put("appkey", "15732");
-        map.put("sign", "bf10378fb5e93259d0a94f2423fa81e5");
-       /* NetWork.getApi().getNowWeather(map)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(nowWeatherBean -> {
-                            textResult.setText(nowWeatherBean.getResult().getCitynm());
-                            Log.e(TAG, nowWeatherBean.getResult().getCitynm());
-                        }, e -> Toast.makeText(RetrofitActivity.this, "error" + e.getMessage(), Toast.LENGTH_SHORT).show(),
-                        () -> Log.e("onComplete", "onComplete"));*/
+        showLoading();
+        DisposableObserver<NowWeatherBean> observer = newObserver(new Consumer<NowWeatherBean>() {
+            @Override
+            public void accept(NowWeatherBean bean) throws Exception {
+                viewBind.textWeatherResult.setText(bean.toString());
+            }
+        });
+        NetWork.getData(new NowWeatherEntity("weather.today", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), NowWeatherBean.class)
+                .subscribe(observer);
+        compositeDisposable.add(observer);
     }
 
-    private void test() {
-        NetWork.getApi().testNowWeather(map)
-                .map(new Function<HttpResult<NowWeatherBean>, NowWeatherBean>() {
-                    @Override
-                    public NowWeatherBean apply(HttpResult<NowWeatherBean> result) throws Exception {
-                        return result.getData();
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<NowWeatherBean>() {
-                    @Override
-                    public void accept(NowWeatherBean nowWeatherBean) throws Exception {
-                        Log.e(TAG, nowWeatherBean.getSuccess());
-                    }
-                });
-       /* NetWork.getApi().testNowWeather(map)
-                .flatMap(new Function<HttpResult<NowWeatherBean>, ObservableSource<NowWeatherBean>>() {
-                    @Override
-                    public ObservableSource<NowWeatherBean> apply(HttpResult<NowWeatherBean> result) throws Exception {
-                        return NetWork.flatResponse(result);
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<NowWeatherBean>() {
-                    @Override
-                    public void accept(NowWeatherBean nowWeatherBean) throws Exception {
-                        Log.e(TAG, nowWeatherBean.getSuccess());
-                    }
-                });*/
-        /*NetWork.getApi().testNowWeather(map)
-                .flatMap(NetWork::flatResponse)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(nowWeatherBean -> Log.e(TAG, nowWeatherBean.getSuccess()),
-                        e -> Log.e(TAG, e.getMessage()));*/
+    public void getPM(View view) {
+        //http://api.k780.com:88/?app=weather.pm25&weaid=1&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
+        showLoading();
+        DisposableObserver<PM25> observer = newObserver(new Consumer<PM25>() {
+            @Override
+            public void accept(PM25 bean) throws Exception {
+                viewBind.textPmResult.setText(bean.toString());
+            }
+        });
+        NetWork.getData(new PM25Entity("weather.pm25", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), PM25.class)
+                .subscribe(observer);
+        compositeDisposable.add(observer);
     }
 
-    //进行网络请求
-    private void getMovie() {
-        NetWork.getApi().getTopMovie(0, 2)
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(d -> {
-                    if (!d.isDisposed()) {
-                        loadingDialog.show();
-                    }
-                })
-                .doAfterTerminate(() -> loadingDialog.dismiss())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(movieEntity -> textMovieResult.setText(movieEntity.getTitle()),
-                        e -> textMovieResult.setText(e.getMessage()));
+    public void getHistoryWeather(View view) {
+        showLoading();
+        compositeDisposable.add(
+                NetWork.getDataList(new HistoryWeatherEntity("weather.history",
+                        100, "2018-01-30", "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4",
+                        "json"), HistoryWeatherBean.class)
+                        .subscribeWith(newObserver(new Consumer<List<HistoryWeatherBean>>() {
+                            @Override
+                            public void accept(List<HistoryWeatherBean> beans) throws Exception {
+                                viewBind.textHistoryWeatherResult.setText(beans.toString());
+                            }
+                        }))
+        );
+    }
+
+    @Override
+    protected void onDestroy() {
+        compositeDisposable.clear();
+        super.onDestroy();
     }
 
     private void uploadSingleFile(File file) {
-
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         // MultipartBody.Part is used to send also the actual file name
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
@@ -171,7 +162,6 @@ public class RetrofitActivity extends AppCompatActivity {
     }
 
     private void uploadMulFile(File file) {
-
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         // MultipartBody.Part is used to send also the actual file name
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
@@ -187,7 +177,6 @@ public class RetrofitActivity extends AppCompatActivity {
     }
 
     private void uploadManyFlie(File file1, File file2) {
-
         RequestBody requestBody1 = RequestBody.create(MediaType.parse("multipart/form-data"), file1);
         RequestBody requestBody2 = RequestBody.create(MediaType.parse("multipart/form-data"), file2);
 
@@ -202,7 +191,7 @@ public class RetrofitActivity extends AppCompatActivity {
                         e -> Log.e(TAG, e.getMessage()));
     }
 
-    private static final String TAG = "RetrofitActivity";
+    private static final String TAG = "RetrofitRxJavaActivity";
 
     private void downLoadWeChat(String downLoadUrl) {
         NetWork.getApi().downloadFile(downLoadUrl)
@@ -236,7 +225,7 @@ public class RetrofitActivity extends AppCompatActivity {
                     @Override
                     public void call(Throwable throwable) {
                         Log.e(TAG, "保存失败" + throwable.getMessage());
-                        Toast.makeText(RetrofitActivity.this, "保存失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RetrofitRxJavaActivity.this, "保存失败", Toast.LENGTH_SHORT).show();
                     }
                 });*/
 
@@ -308,14 +297,23 @@ public class RetrofitActivity extends AppCompatActivity {
         dialog.show();
         downloadApi.downLoad(downLoadUrl)
                 .subscribeOn(Schedulers.io())//不能在主线程下载
-                .subscribe(responseBody -> {
-                    if (saveToDisk(responseBody)) {
-                        runOnUiThread(() -> {
-                            dialog.dismiss();
-                            installApk(downLoadFile);
-                        });
-                    } else {
-                        Log.e(TAG, "保存文件失败");
+                .subscribe(new Consumer<ResponseBody>() {
+                    @Override
+                    public void accept(ResponseBody responseBody) throws Exception {
+                        if (saveToDisk(responseBody)) {
+                            runOnUiThread(() -> {
+                                dialog.dismiss();
+                                installApk(downLoadFile);
+                            });
+                        } else {
+                            Log.e(TAG, "保存文件失败");
+                        }
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG, "accept: error:" + throwable);
+                        dialog.dismiss();
                     }
                 });
     }
@@ -361,7 +359,7 @@ public class RetrofitActivity extends AppCompatActivity {
 
         try {
             totalLength = responseBody.contentLength();
-            Log.e(tag, "totalLength=" + totalLength);
+            Log.e(TAG, "totalLength=" + totalLength);
             in = responseBody.byteStream();
             bis = new BufferedInputStream(in);
             out = new FileOutputStream(downLoadFile);

@@ -11,6 +11,16 @@ public class DownloadInfo {
     private long total;
     private long progress;
     private String fileName;
+    //下载的安装包的完整路径
+    private String fullPath;
+
+    public String getFullPath() {
+        return fullPath;
+    }
+
+    public void setFullPath(String fullPath) {
+        this.fullPath = fullPath;
+    }
 
     public DownloadInfo(String url) {
         this.url = url;

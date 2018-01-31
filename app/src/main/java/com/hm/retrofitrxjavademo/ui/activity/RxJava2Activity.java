@@ -2,12 +2,12 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityRxJava2Binding;
+import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -26,7 +26,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
@@ -37,10 +36,9 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * 参考链接： https://www.jianshu.com/p/464fa025229e
  */
-public class RxJava2Activity extends AppCompatActivity {
+public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
     private static final String TAG = "RxJava2Activity";
-    private CompositeDisposable compositeDisposable;
     private Subscription mSubscription;
 
     public static void launch(Context context) {
@@ -49,10 +47,13 @@ public class RxJava2Activity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rx_java2);
-        compositeDisposable = new CompositeDisposable();
+    protected int bindLayout() {
+        return R.layout.activity_rx_java2;
+    }
+
+    @Override
+    protected void initData() {
+
     }
 
     public void fun1(View view) {

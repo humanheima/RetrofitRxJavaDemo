@@ -15,7 +15,10 @@ import java.util.HashMap;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -52,12 +55,32 @@ public class DownloadManager {
 
     public void downLoad(String url, DownLoadObserver downLoadObserver) {
         Observable.just(url)
-                .filter(s -> !downCalls.containsKey(s))
-                .flatMap(s -> Observable.just(createDownloadInfo(s)))
-                .map(this::getRealFileName)
-                .flatMap(downloadInfo -> Observable.create(new DownloadSubscriber(downloadInfo)))
-                .observeOn(AndroidSchedulers.mainThread())
+                .filter(new Predicate<String>() {
+                    @Override
+                    public boolean test(String s) throws Exception {
+                        return !downCalls.containsKey(s);
+                    }
+                })
+                .flatMap(new Function<String, ObservableSource<DownloadInfo>>() {
+                    @Override
+                    public ObservableSource<DownloadInfo> apply(String s) throws Exception {
+                        return Observable.just(createDownloadInfo(s));
+                    }
+                })
+                .map(new Function<DownloadInfo, DownloadInfo>() {
+                    @Override
+                    public DownloadInfo apply(DownloadInfo downloadInfo) throws Exception {
+                        return getRealFileName(downloadInfo);
+                    }
+                })
+                .flatMap(new Function<DownloadInfo, ObservableSource<DownloadInfo>>() {
+                    @Override
+                    public ObservableSource<DownloadInfo> apply(DownloadInfo downloadInfo) throws Exception {
+                        return Observable.create(new DownloadSubscriber(downloadInfo));
+                    }
+                })
                 .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(downLoadObserver);
     }
 
@@ -69,7 +92,7 @@ public class DownloadManager {
         downCalls.remove(url);
     }
 
-    private DownloadInfo createDownloadInfo(String url) {
+    private DownloadInfo createDownloadInfo(String url) throws Exception {
         DownloadInfo downloadInfo = new DownloadInfo(url);
         long contentLength = getContentLength(url);
         downloadInfo.setTotal(contentLength);
@@ -80,6 +103,7 @@ public class DownloadManager {
     }
 
     private DownloadInfo getRealFileName(DownloadInfo downloadInfo) {
+        Log.e(TAG, "getRealFileName");
         String fileName = downloadInfo.getFileName();
         long downloadLength = 0;
         long contentLength = downloadInfo.getTotal();
@@ -109,21 +133,25 @@ public class DownloadManager {
         return downloadInfo;
     }
 
-    private long getContentLength(String url) {
-        Request request = new Request.Builder()
+    /**
+     * @param url 下载地址
+     * @return 真正下载之前，先获取下载内容的长度
+     */
+    private long getContentLength(String url) throws Exception {
+        Request request = new Request
+                .Builder()
                 .url(url)
                 .build();
-        try {
-            Response response = mClient.newCall(request).execute();
-            if (response != null && response.isSuccessful()) {
-                long contentLength = response.body().contentLength();
-                response.close();
-                return contentLength == 0 ? DownloadInfo.TOTAL_ERROR : contentLength;
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "getContentLength exception" + e.getMessage());
+        Response response = mClient
+                .newCall(request)
+                .execute();
+        if (response.isSuccessful()) {
+            long contentLength = response.body().contentLength();
+            response.close();
+            return contentLength;
+        } else {
+            throw new Exception(TAG + "#getContentLength code" + response.code() + ",message:" + response.message());
         }
-        return DownloadInfo.TOTAL_ERROR;
     }
 
     private class DownloadSubscriber implements ObservableOnSubscribe<DownloadInfo> {
@@ -150,27 +178,33 @@ public class DownloadManager {
             downCalls.put(url, call);
             Response response = call.execute();
             File file = new File(App.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), downloadInfo.getFileName());
-            InputStream is = null;
-            FileOutputStream fos = null;
+            InputStream is;
+            FileOutputStream fos;
+            is = response.body().byteStream();
+            fos = new FileOutputStream(file, true);
+            byte[] buffer = new byte[8192];
+            int len;
             try {
-                is = response.body().byteStream();
-                fos = new FileOutputStream(file, true);
-                byte[] buffer = new byte[2048];
-                int len;
-                while ((len = is.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                    downloadLength += len;
-                    downloadInfo.setProgress(downloadLength);
-                    e.onNext(downloadInfo);
+                if (!call.isCanceled()) {
+                    while ((len = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
+                        downloadLength += len;
+                        downloadInfo.setProgress(downloadLength);
+                        e.onNext(downloadInfo);
+                    }
+                    fos.flush();
+                    //下载完成后，设置安装包的完整路径
+                    downloadInfo.setFullPath(file.getPath());
+                    e.onComplete();
                 }
-                fos.flush();
-                downCalls.remove(url);
+            } catch (IOException exception) {
+                e.onError(new Throwable("DownloadSubscriber# error:" + exception.getMessage()));
             } finally {
+                Log.e(TAG, "subscribe: finally");
+                downCalls.remove(url);
                 IOUtil.closeAll(is, fos);
             }
-            e.onComplete();
         }
     }
-
 
 }

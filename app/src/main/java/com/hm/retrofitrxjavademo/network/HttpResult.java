@@ -10,13 +10,20 @@ import com.google.gson.annotations.SerializedName;
 
 public class HttpResult<T> {
 
-    public int resultCode;
-    public String resultMessage;
-    @SerializedName("body")
+    //这里赋值为1，是为了获取豆瓣top250的接口能用，真实情况下应该为0
+    private int resultCode = 1;
+    private String resultMessage;
+    @SerializedName(value = "subjects", alternate = "result")
     public T data;
 
-    public boolean isSuccess() {
-        return resultCode == 1;
+    private int success;
+
+    public int getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(int success) {
+        this.success = success;
     }
 
     public T getData() {

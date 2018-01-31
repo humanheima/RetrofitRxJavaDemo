@@ -25,9 +25,9 @@
         </activity>
         <activity android:name=".ui.activity.RxJavaOperatorActivity"
             android:label="@string/rx_java_operator"/>
-        <activity android:name=".ui.activity.RetrofitActivity" />
+        <activity android:name=".ui.activity.RetrofitRxJavaActivity" />
         <activity
-            android:name=".ui.activity.OkHttp3DownloadActivity"
+            android:name=".ui.activity.OkHttpDownloadActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".ui.activity.DownloadManagerActivity" />
 
