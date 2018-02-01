@@ -227,4 +227,6 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
 Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Object> map);
 
 ```
+* 如果要下载Apk 使用 DownloadUtil(RetrofitRxJavaActivity有使用例子)，或者使用系统自带的DownloadManager(DownloadManagerActivity有使用例子)
+
  
