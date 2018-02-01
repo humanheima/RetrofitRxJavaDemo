@@ -72,8 +72,18 @@
                 android:layout_height="wrap_content"
                 android:hint="展示结果" />
 
+            <Button
+                android:id="@+id/btn_download"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onClick"
+                android:text="@string/test_download"
+                android:textAllCaps="false" />
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
+
 </layout>
 

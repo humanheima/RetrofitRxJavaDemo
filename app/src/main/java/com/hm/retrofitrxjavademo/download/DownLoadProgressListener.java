@@ -1,7 +1,7 @@
 package com.hm.retrofitrxjavademo.download;
 
 /**
- * Created by Administrator on 2017/1/11.
+ * Created by dumingwei on 2017/1/11.
  * 下载进度监听
  */
 public interface DownLoadProgressListener {
