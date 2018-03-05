@@ -1,4 +1,16 @@
 #RetrofitRxJavaDemo
+
+### Retrofit 
+[这是一份很详细的 Retrofit 2.0 使用教程](http://blog.csdn.net/carson_ho/article/details/73732076)
+Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。网络请求的工作本质上是 OkHttp 完成，而 Retrofit 仅负责 网络请求接口的封装
+
+### RxJava
+[给 Android 开发者的 RxJava 详解](https://gank.io/post/560e15be2dca930e00da1083)
+
+RxJava 一句话概括就是一个实现异步操作的库
+
+Retrofit+RxJava：RxJava把Retrofit的请求结果封装成Observable，形成链式调用，代码清晰简洁。
+
 * 上传文件，接口定义
 ```
     //上传单个文件
