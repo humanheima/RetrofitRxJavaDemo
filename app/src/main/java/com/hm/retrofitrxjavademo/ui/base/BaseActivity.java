@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.hm.retrofitrxjavademo.network.APIException;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
 import com.hm.retrofitrxjavademo.widget.LoadingDialog;
 
@@ -19,10 +20,10 @@ import io.reactivex.observers.DisposableObserver;
 public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatActivity {
 
     protected V viewBind;
-    private LoadingDialog loadingDialog;
     protected String TAG = getClass().getName();
     //用来取消订阅
     protected CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private LoadingDialog loadingDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,12 +46,6 @@ public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatA
         loadingDialog.show();
     }
 
-    protected final void hideLoading() {
-        if (loadingDialog != null && loadingDialog.isShowing()) {
-            loadingDialog.dismiss();
-        }
-    }
-
     protected <T> DisposableObserver<T> newObserver(final Consumer<T> onNext) {
         return new DisposableObserver<T>() {
             @Override
@@ -64,10 +59,11 @@ public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatA
 
             @Override
             public void onError(Throwable e) {
-                e.printStackTrace();
-                Log.e(TAG, "onError: " + e.getMessage());
+                int code = ((APIException) e).getCode();
+                String message = e.getMessage();
+                Log.e(TAG, "onError: code" + code + ",message:" + message);
                 hideLoading();
-                ToastUtil.toast(e.getMessage());
+                ToastUtil.toast(message);
             }
 
             @Override
@@ -76,5 +72,11 @@ public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatA
                 hideLoading();
             }
         };
+    }
+
+    protected final void hideLoading() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        }
     }
 }

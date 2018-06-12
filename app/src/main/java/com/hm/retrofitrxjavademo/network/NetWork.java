@@ -3,7 +3,6 @@ package com.hm.retrofitrxjavademo.network;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.gson.JsonArray;
 import com.hm.retrofitrxjavademo.App;
 import com.hm.retrofitrxjavademo.network.api_entity.BaseEntity;
 import com.hm.retrofitrxjavademo.util.JsonUtil;
@@ -14,7 +13,6 @@ import org.json.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,30 +45,30 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class NetWork {
 
-    private static final long CACHE_SIZE = 100 * 1024 * 1024;
     public static final String EMPTY_JSON_ARRAY = "[]";
+    private static final long CACHE_SIZE = 100 * 1024 * 1024;
+    private static final String TAG = "NetWork";
+    private static final String BASE_URL = "http://api.k780.com:88";
+    private static final String UPLOAD_FILE_BASE_URL = "http://api.k780.com:88";
+    //实例化一个ObservableTransformer 不用每次都创建一个实例
+    @SuppressWarnings("unchecked")
+    private static final ObservableTransformer transform = new ObservableTransformer() {
+        @Override
+        public ObservableSource apply(Observable upstream) {
+            return upstream.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(new Function() {
+                        @Override
+                        public Object apply(Object response) {
+                            return flatResponse(((HttpResult<Object>) response));
+                        }
+                    });
+        }
+    };
+    //private static final String BASE_URL = "https://api.heweather.com/x3/";
     private static API api;
     private static UpLoadFileApi upLoadFileApi;
     private static OkHttpClient okHttpClient;
-
-    private static final String TAG = "NetWork";
-    //private static final String BASE_URL = "https://api.heweather.com/x3/";
-
-    private static final String BASE_URL = "http://api.k780.com:88";
-    private static final String UPLOAD_FILE_BASE_URL = "http://api.k780.com:88";
-
-    public static API getApi() {
-        if (api == null) {
-            initClient();
-            api = new Retrofit.Builder()
-                    .client(okHttpClient)
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build().create(API.class);
-        }
-        return api;
-    }
 
     public static UpLoadFileApi getUpLoadFileApi() {
         if (upLoadFileApi == null) {
@@ -124,32 +122,48 @@ public class NetWork {
     private static <T> Observable<T> flatResponse(final HttpResult<T> response) {
         return Observable.create(new ObservableOnSubscribe<T>() {
             @Override
-            public void subscribe(ObservableEmitter<T> e) throws Exception {
-                if (response.getResultCode() == 1 || response.getSuccess() == 1) {
+            public void subscribe(ObservableEmitter<T> e) {
+                if (response.getSuccess() == 1) {
                     e.onNext(response.data);
                     e.onComplete();
                 } else {
-                    e.onError(new APIException(response.getResultCode(), response.getResultMessage()));
+                    Log.d(TAG, "flatResponse subscribe: ");
+                    e.onError(new APIException(response.getSuccess(), response.getResultMessage()));
                 }
             }
         });
     }
 
-    //实例化一个ObservableTransformer 不用每次都创建一个实例
     @SuppressWarnings("unchecked")
-    private static final ObservableTransformer transform = new ObservableTransformer() {
-        @Override
-        public ObservableSource apply(Observable upstream) {
-            return upstream.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .flatMap(new Function() {
-                        @Override
-                        public Object apply(Object response) throws Exception {
-                            return flatResponse(((HttpResult<Object>) response));
-                        }
-                    });
+    public static <T> Observable<T> getData(BaseEntity entity, Class<T> classType) {
+        return getApi()
+                .getData(entity.getUrl(), entity.getParams())
+                .compose(applySchedulers())
+                .map(new Function<Object, T>() {
+                    @Override
+                    public T apply(Object o) {
+                        String json = JsonUtil.getInstance().toJson(o);
+                        return JsonUtil.getInstance().toObject(json, classType);
+                    }
+                })
+                .onErrorResumeNext(new HttpResultFunc<>())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+
+    }
+
+    public static API getApi() {
+        if (api == null) {
+            initClient();
+            api = new Retrofit.Builder()
+                    .client(okHttpClient)
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build().create(API.class);
         }
-    };
+        return api;
+    }
 
     /**
      * 使用ObservableTransformer 来复用操作符
@@ -177,31 +191,6 @@ public class NetWork {
             }
         };*/
         return ((ObservableTransformer<HttpResult<T>, T>) transform);
-    }
-
-    /**
-     * 获取的数据结构为 JsonObject
-     *
-     * @param entity    请求参数
-     * @param classType 返回的数据结构类型
-     * @param <T>
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> Observable<T> getData(BaseEntity entity, Class<T> classType) {
-        return getApi()
-                .getData(entity.getUrl(), entity.getParams())
-                .compose(applySchedulers())
-                .map(new Function<Object, T>() {
-                    @Override
-                    public T apply(Object o) throws Exception {
-                        String json = JsonUtil.getInstance().toJson(o);
-                        if (TextUtils.isEmpty(json)) {
-                            return null;
-                        }
-                        return JsonUtil.getInstance().toObject(json, classType);
-                    }
-                });
     }
 
     /**
@@ -235,25 +224,6 @@ public class NetWork {
                 });
     }
 
-
-    /**
-     * 自定义异常，当接口返回的{link Response#code}不为{link Constant#OK}时，需要抛出此异常
-     * eg：登陆时验证码错误；参数为传递等
-     */
-    public static class APIException extends Exception {
-        public int code;
-        public String message;
-
-        public APIException(int code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
-        @Override
-        public String getMessage() {
-            return message;
-        }
-    }
 
     private static class CacheInterceptor implements Interceptor {
 
@@ -305,6 +275,15 @@ public class NetWork {
                 //Log.e(TAG, "request response head" + response.headers());
                 return response;
             }
+        }
+    }
+
+    public static class HttpResultFunc<T> implements Function<Throwable, Observable<T>> {
+
+        @Override
+        public Observable<T> apply(Throwable throwable) {
+            Log.d(TAG, "apply: onErrorResumeNext:" + throwable.getMessage());
+            return Observable.error(ExceptionHandler.handleException(throwable));
         }
     }
 }

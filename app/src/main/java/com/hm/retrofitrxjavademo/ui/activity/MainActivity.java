@@ -1,7 +1,9 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.Manifest;
+import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -26,6 +28,16 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
     @Override
     protected void initData() {
         requestPermission();
+    }
+
+    private void requestPermission() {
+        String[] prems = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE};
+        if (EasyPermissions.hasPermissions(this, prems)) {
+            Toast.makeText(this, "have got permission", Toast.LENGTH_LONG).show();
+            testStorePath();
+        } else {
+            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission", REQUEST_PERMISSION, prems);
+        }
     }
 
     public void onClick(View view) {
@@ -60,22 +72,25 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
-    private void requestPermission() {
-        String[] prems = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE};
-        if (EasyPermissions.hasPermissions(this, prems)) {
-            Toast.makeText(this, "have got permission", Toast.LENGTH_LONG).show();
-        } else {
-            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission", REQUEST_PERMISSION, prems);
-        }
-    }
-
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-
+        testStorePath();
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
 
+    }
+
+    private void testStorePath() {
+        Log.d(TAG, "testStorePath: getFilesDir().getAbsolutePath()=" + getFilesDir().getAbsolutePath());
+        Log.d(TAG, "testStorePath: getFilesDir().getPath()=" + getFilesDir().getPath());
+        Log.d(TAG, "testStorePath: getExternalCacheDir().getPath()=" + getExternalCacheDir().getPath());
+        Log.d(TAG, "testStorePath: getExternalCacheDir()." +
+                "getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath()=" + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath());
+        if (Environment.isExternalStorageEmulated()) {
+            Log.d(TAG, "testStorePath:getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath():"
+                    + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
+        }
     }
 }

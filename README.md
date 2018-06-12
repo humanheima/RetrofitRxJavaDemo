@@ -241,4 +241,6 @@ Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Ob
 ```
 * 如果要下载Apk 使用 DownloadUtil(RetrofitRxJavaActivity有使用例子)，或者使用系统自带的DownloadManager(DownloadManagerActivity有使用例子)
 
+* RxJava统一异常处理
+
  
