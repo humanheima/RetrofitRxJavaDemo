@@ -1,5 +1,6 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -40,6 +41,8 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
     private static final String TAG = "RxJava2Activity";
     private Subscription mSubscription;
+    private int retryTimes = 5;
+    private int rangeCount = 5;
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, RxJava2Activity.class);
@@ -54,6 +57,75 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
     @Override
     protected void initData() {
 
+    }
+
+    @SuppressLint("CheckResult")
+    public void testRetry(View view) {
+        testRetry();
+    }
+
+    private void testRetry() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                /*emitter.onNext(number);
+                emitter.onComplete();*/
+                retryTimes--;
+                if (retryTimes > 0) {
+                    emitter.onError(new RuntimeException("always fails"));
+                } else {
+                    //emitter.onError(new Throwable("last fails"));
+                    emitter.onNext(100);
+                    emitter.onComplete();
+                }
+            }
+        }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
+            @Override
+            public ObservableSource<?> apply(Observable<Throwable> throwableObservable) throws Exception {
+                return throwableObservable.zipWith(Observable.range(1, rangeCount), new BiFunction<Throwable, Integer, Boolean>() {
+                    @Override
+                    public Boolean apply(Throwable throwable, Integer integer) throws Exception {
+                        boolean b = throwable instanceof RuntimeException;
+                        Log.d(TAG, "apply: throwable:" + throwable.getMessage() + ",:" + b);
+                        return b;
+                    }
+                }).flatMap(new Function<Boolean, ObservableSource<?>>() {
+                    @Override
+                    public ObservableSource<?> apply(Boolean aBoolean) throws Exception {
+                        //如果这个Observable发射了一项数据，它就重新订阅，如果这个Observable发射的
+                        // 是onError通知，它就将这个通知传递给观察者然后终止。
+                        if (aBoolean) {
+                            //重新订阅
+                            return Observable.timer(1, TimeUnit.SECONDS);
+                        } else {
+                            //给观察者传递一个throwable，然后终止
+                            return Observable.error(new Throwable("test retryWhen"));
+                        }
+                    }
+                });
+            }
+        }).subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "accept: integer:" + integer);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "accept: throwable:" + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ");
+            }
+        });
     }
 
     public void fun1(View view) {

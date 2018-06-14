@@ -379,6 +379,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             }
         }).subscribe(observer);
 
+
       /*  Observable.create((ObservableEmitter<String> e) ->
                 e.onError(new RuntimeException("always fails")))
                 .retryWhen(throwableObservable ->
