@@ -7,6 +7,8 @@ Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。网络请求�
 ### RxJava
 [给 Android 开发者的 RxJava 详解](https://gank.io/post/560e15be2dca930e00da1083)
 
+[retryWhen使用方法](https://www.jianshu.com/p/023a5f60e6d0)
+
 RxJava 一句话概括就是一个实现异步操作的库
 
 Retrofit+RxJava：RxJava把Retrofit的请求结果封装成Observable，形成链式调用，代码清晰简洁。
@@ -48,7 +50,7 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
 
 * disposable
 
-```
+```java
 /**
      * {@link Disposable}
      * 调用 Disposable的dispose方法以后，会导致下游收不到事件，但是上游会继续发送剩余的事件.
@@ -106,7 +108,7 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
    ```
 * from 
 
-   ```
+   ```java
    private void from() {
            String[] words = {"Hello", "Hi", "Aloha"};
            Observable.fromArray(words)
@@ -152,7 +154,8 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
        }
    ```
 * buffer(int count, int skip)
-```
+```java
+
         //buffer(int count, int skip),从原始Observable中每缓存skip个item，从中选择最多count个数据发
         // 射。如果从原始Observable缓存的数据不到skip个，就遇到onCompleted(),则发射当前缓存的数据。
         // 如果从原始Observable缓存的数据不到skip个，就遇到onError(),如果当前缓存的数据够count个，
@@ -186,7 +189,8 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
                 });
 ```
 * buffer(ObservableSource<B> boundary, final int initialCapacity)
-```
+```java
+
   Observable.interval(100, TimeUnit.MILLISECONDS)
                 .take(100)
                 //第二个参数 initialCapacity 表示返回的List的初始容量
@@ -203,7 +207,8 @@ MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getNam
                 
 ```
 * compose 
-```
+```java
+
  /**
      * 使用compose复用操作符的例子
      * {@link NetWork#applySchedulers()}
@@ -240,5 +245,73 @@ Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Ob
 
 ```
 * 如果要下载Apk 使用 DownloadUtil(RetrofitRxJavaActivity有使用例子)，或者使用系统自带的DownloadManager(DownloadManagerActivity有使用例子)
+
+* retry
+```java
+ private void testRetry() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                /*emitter.onNext(number);
+                emitter.onComplete();*/
+                retryTimes--;
+                if (retryTimes > 0) {
+                    emitter.onError(new RuntimeException("always fails"));
+                } else {
+                    //emitter.onError(new Throwable("last fails"));
+                    emitter.onNext(100);
+                    emitter.onComplete();
+                }
+            }
+        }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
+            @Override
+            public ObservableSource<?> apply(Observable<Throwable> throwableObservable) throws Exception {
+                return throwableObservable.zipWith(Observable.range(1, rangeCount), new BiFunction<Throwable, Integer, Boolean>() {
+                    @Override
+                    public Boolean apply(Throwable throwable, Integer integer) throws Exception {
+                        boolean b = throwable instanceof RuntimeException;
+                        Log.d(TAG, "apply: throwable:" + throwable.getMessage() + ",:" + b);
+                        return b;
+                    }
+                }).flatMap(new Function<Boolean, ObservableSource<?>>() {
+                    @Override
+                    public ObservableSource<?> apply(Boolean aBoolean) throws Exception {
+                        //如果这个Observable发射了一项数据，它就重新订阅，如果这个Observable发射的
+                        // 是onError通知，它就将这个通知传递给观察者然后终止。
+                        if (aBoolean) {
+                            //重新订阅
+                            return Observable.timer(1, TimeUnit.SECONDS);
+                        } else {
+                            //给观察者传递一个throwable，然后终止
+                            return Observable.error(new Throwable("test retryWhen"));
+                        }
+                    }
+                });
+            }
+        }).subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "accept: integer:" + integer);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "accept: throwable:" + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ");
+            }
+        });
+    }
+```
+* RxJava统一异常处理
 
  

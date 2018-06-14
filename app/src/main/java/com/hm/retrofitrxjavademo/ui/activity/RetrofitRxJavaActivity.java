@@ -13,12 +13,10 @@ import com.hm.retrofitrxjavademo.databinding.ActivityRetrofitRxJavaBinding;
 import com.hm.retrofitrxjavademo.download.DownloadCallback;
 import com.hm.retrofitrxjavademo.download.DownloadUtil;
 import com.hm.retrofitrxjavademo.model.HistoryWeatherBean;
-import com.hm.retrofitrxjavademo.model.MovieBean;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.model.PM25;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.network.api_entity.HistoryWeatherEntity;
-import com.hm.retrofitrxjavademo.network.api_entity.MovieEntity;
 import com.hm.retrofitrxjavademo.network.api_entity.NowWeatherEntity;
 import com.hm.retrofitrxjavademo.network.api_entity.PM25Entity;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
@@ -68,15 +66,32 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         }
     }
 
-    public void getMovie(View view) {
-        showLoading();
-        compositeDisposable.add(NetWork.getDataList(new MovieEntity(1, 1), MovieBean.class)
-                .subscribeWith(newObserver(new Consumer<List<MovieBean>>() {
-                    @Override
-                    public void accept(List<MovieBean> movieBeans) throws Exception {
-                        viewBind.textMovieResult.setText(movieBeans.toString());
-                    }
-                })));
+    private void downloadApk(String url) {
+        DownloadUtil.newInstance(this, new DownloadCallback() {
+            @Override
+            public void onSuccess(File file) {
+                installApk(file);
+            }
+
+            @Override
+            public void onFailed() {
+                ToastUtil.toast("downloadFiled");
+            }
+        }).download(url);
+    }
+
+    private void installApk(File file) {
+        Uri uri;
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //如果是7.0以上的系统，要使用FileProvider的方式构建Uri
+            uri = FileProvider.getUriForFile(this, "com.hm.retrofitrxjavademo.fileprovider", file);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setDataAndType(uri, "application/vnd.android.package-archive");
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        }
+        startActivity(intent);
     }
 
     /**
@@ -87,8 +102,9 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
         showLoading();
         DisposableObserver<NowWeatherBean> observer = newObserver(new Consumer<NowWeatherBean>() {
+
             @Override
-            public void accept(NowWeatherBean bean) throws Exception {
+            public void accept(NowWeatherBean bean) {
                 viewBind.textWeatherResult.setText(bean.toString());
             }
         });
@@ -117,7 +133,7 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         showLoading();
         compositeDisposable.add(
                 NetWork.getDataList(new HistoryWeatherEntity("weather.history",
-                        100, "2018-01-30", "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4",
+                        100, "2018-06-12", "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4",
                         "json"), HistoryWeatherBean.class)
                         .subscribeWith(newObserver(new Consumer<List<HistoryWeatherBean>>() {
                             @Override
@@ -177,34 +193,6 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(s -> Log.e(TAG, s),
                         e -> Log.e(TAG, e.getMessage()));
-    }
-
-    private void downloadApk(String url) {
-        DownloadUtil.newInstance(this, new DownloadCallback() {
-            @Override
-            public void onSuccess(File file) {
-                installApk(file);
-            }
-
-            @Override
-            public void onFailed() {
-                ToastUtil.toast("downloadFiled");
-            }
-        }).download(url);
-    }
-
-    private void installApk(File file) {
-        Uri uri;
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            //如果是7.0以上的系统，要使用FileProvider的方式构建Uri
-            uri = FileProvider.getUriForFile(this, "com.hm.retrofitrxjavademo.fileprovider", file);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.setDataAndType(uri, "application/vnd.android.package-archive");
-        } else {
-            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-        }
-        startActivity(intent);
     }
 
 }

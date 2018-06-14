@@ -23,8 +23,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.RxJavaOperatorActivity"
-            android:label="@string/rx_java_operator"/>
+        <activity
+            android:name=".ui.activity.RxJavaOperatorActivity"
+            android:label="@string/rx_java_operator" />
         <activity android:name=".ui.activity.RetrofitRxJavaActivity" />
         <activity
             android:name=".ui.activity.OkHttpDownloadActivity"
@@ -41,8 +42,8 @@
                 android:resource="@xml/filepaths" />
         </provider>
 
-        <activity android:name=".ui.activity.OnlyRetrofitActivity"></activity>
-        <activity android:name=".ui.activity.RxJava2Activity"></activity>
+        <activity android:name=".ui.activity.OnlyRetrofitActivity" />
+        <activity android:name=".ui.activity.RxJava2Activity" />
     </application>
 
 </manifest>
