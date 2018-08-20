@@ -41,6 +41,6 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit2Version"
     implementation "com.squareup.retrofit2:converter-scalars:$rootProject.ext.retrofit2Version"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.retrofit2Version"
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'pub.devrel:easypermissions:1.1.3'
 }
