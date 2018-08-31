@@ -25,8 +25,13 @@ public interface UpLoadFileApi {
 
     //上传单个文件
     @Multipart
-    @POST("upload")
-    Observable<String> uploadFile(@Part("images") RequestBody file);
+    @POST("https://test.youshikoudai.com/1bPlus-web/api/file/uploadFile")
+    Observable<String> uploadFile(@Part("file") RequestBody file);
+
+    //上传单个文件
+    @Multipart
+    @POST("https://test.youshikoudai.com/1bPlus-web/api/file/uploadFile")
+    Observable<String> uploadFileWithRealName(@Part MultipartBody.Part file);
 
     //上传参数和单个文件
     @Multipart

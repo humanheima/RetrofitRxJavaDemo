@@ -1,5 +1,6 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,6 +24,7 @@ import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+
+@SuppressLint("CheckResult")
 
 public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaBinding> {
 
@@ -150,24 +154,46 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         super.onDestroy();
     }
 
-    private void uploadSingleFile(File file) {
+    private void uploadFile(File file) {
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        // MultipartBody.Part is used to send also the actual file name
-        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
-        // 添加描述
-        String descriptionString = "hello, 这是文件描述";
-        RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
-
-        NetWork.getUpLoadFileApi().uploadSingleFile(description, body)
+        NetWork.getUpLoadFileApi().uploadFile(requestBody)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(s -> Log.e(TAG, s),
-                        e -> Log.e(TAG, e.getMessage()));
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String result) throws Exception {
+                        Log.d(TAG, "accept: result:" + result);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+
+                    }
+                });
     }
 
-    private void uploadMulFile(File file) {
+    private void uploadFileWithRealName(File file) {
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part part = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
+        NetWork.getUpLoadFileApi().uploadFileWithRealName(part)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String result) throws Exception {
+                        Log.d(TAG, "accept: result:" + result);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+
+                    }
+                });
+    }
+
+    private void uploadSingleFileWithDescription(File file) {
         // MultipartBody.Part is used to send also the actual file name
+        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestBody);
         // 添加描述
         String descriptionString = "hello, 这是文件描述";
@@ -189,6 +215,24 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
         requestBodyMap.put("file2", requestBody2);
 
         NetWork.getUpLoadFileApi().uploadManyFile(requestBodyMap)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(s -> Log.e(TAG, s),
+                        e -> Log.e(TAG, e.getMessage()));
+    }
+
+
+    /**
+     * @param files
+     */
+    private void uploadMultiFile(List<File> files) {
+        List<MultipartBody.Part> partList = new ArrayList<>();
+        for (File file : files) {
+            RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part part = MultipartBody.Part.createFormData("files", file.getName(), requestBody);
+        }
+
+        NetWork.getUpLoadFileApi().uploadMultiFile(partList)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(s -> Log.e(TAG, s),
