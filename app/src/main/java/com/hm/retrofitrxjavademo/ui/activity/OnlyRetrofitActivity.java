@@ -6,11 +6,17 @@ import android.content.Intent;
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.API;
+import com.hm.retrofitrxjavademo.network.GitHubService;
+import com.hm.retrofitrxjavademo.network.api_entity.Repo;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
@@ -48,6 +54,7 @@ public class OnlyRetrofitActivity extends BaseActivity {
         map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
         map.put("format", "json");
         Call<NowWeatherBean> call = api.retrofitGetNowWeather(map);
+        call.cancel();
         /*call.enqueue(new Callback<NowWeatherBean>() {
             @Override
             public void onResponse(Call<NowWeatherBean> call, Response<NowWeatherBean> response) {
@@ -60,4 +67,33 @@ public class OnlyRetrofitActivity extends BaseActivity {
             }
         });*/
     }
+
+    private void simpleUse() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.github.com/")
+                .build();
+
+        GitHubService service = retrofit.create(GitHubService.class);
+
+        Call<List<Repo>> listCall = service.listRepos("octocat");
+        try {
+            Response<List<Repo>> response = listCall.execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        listCall.enqueue(new Callback<List<Repo>>() {
+            @Override
+            public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<List<Repo>> call, Throwable t) {
+
+            }
+        });
+
+    }
+
 }
