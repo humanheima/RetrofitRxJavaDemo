@@ -2,8 +2,11 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
+import android.view.View;
 
 import com.hm.retrofitrxjavademo.R;
+import com.hm.retrofitrxjavademo.databinding.ActivityOnlyRetrofitBinding;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.API;
 import com.hm.retrofitrxjavademo.network.GitHubService;
@@ -28,6 +31,7 @@ public class OnlyRetrofitActivity extends BaseActivity {
 
     private static final String TAG = "OnlyRetrofitActivity";
     private static final String BASE_URL = "http://api.k780.com";
+    private Retrofit retrofit;
 
     public static void launch(Context context) {
         Intent starter = new Intent(context, OnlyRetrofitActivity.class);
@@ -41,7 +45,7 @@ public class OnlyRetrofitActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        Retrofit retrofit = new Retrofit.Builder()
+       /* Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -54,7 +58,7 @@ public class OnlyRetrofitActivity extends BaseActivity {
         map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
         map.put("format", "json");
         Call<NowWeatherBean> call = api.retrofitGetNowWeather(map);
-        call.cancel();
+        call.cancel();*/
         /*call.enqueue(new Callback<NowWeatherBean>() {
             @Override
             public void onResponse(Call<NowWeatherBean> call, Response<NowWeatherBean> response) {
@@ -66,26 +70,25 @@ public class OnlyRetrofitActivity extends BaseActivity {
                 Log.d(TAG, t.getMessage());
             }
         });*/
-    }
 
-    private void simpleUse() {
-        Retrofit retrofit = new Retrofit.Builder()
+        retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.github.com/")
                 .build();
+    }
+
+    public void simpleUse(View view) {
 
         GitHubService service = retrofit.create(GitHubService.class);
 
         Call<List<Repo>> listCall = service.listRepos("octocat");
-        try {
-            Response<List<Repo>> response = listCall.execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         listCall.enqueue(new Callback<List<Repo>>() {
             @Override
             public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
-
+                List<Repo> repoList = response.body();
+                for (Repo repo : repoList) {
+                    Log.d(TAG, "onResponse: " + repo.getName());
+                }
             }
 
             @Override
@@ -93,7 +96,6 @@ public class OnlyRetrofitActivity extends BaseActivity {
 
             }
         });
-
     }
 
 }

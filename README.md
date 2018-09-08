@@ -3,8 +3,217 @@
 
 ### Retrofit 
 Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。网络请求的工作本质上是 OkHttp 完成，而 Retrofit 仅负责 网络请求接口的封装
+
 [这是一份很详细的 Retrofit 2.0 使用教程](http://blog.csdn.net/carson_ho/article/details/73732076)
+
 [Android：手把手带你深入剖析 Retrofit 2.0 源码](https://blog.csdn.net/carson_ho/article/details/73732115)
+
+OkHttpCall的enqueue方法
+```java
+  @Override public void enqueue(final Callback<T> callback) {
+    checkNotNull(callback, "callback == null");
+
+    okhttp3.Call call;
+    Throwable failure;
+
+    synchronized (this) {
+      if (executed) throw new IllegalStateException("Already executed.");
+      executed = true;
+
+      call = rawCall;
+      failure = creationFailure;
+      if (call == null && failure == null) {
+        try {
+          //1.构建一个okhttp3.Call   
+          call = rawCall = createRawCall();
+        } catch (Throwable t) {
+          failure = creationFailure = t;
+        }
+      }
+    }
+
+    if (failure != null) {
+      callback.onFailure(this, failure);
+      return;
+    }
+
+    if (canceled) {
+      call.cancel();
+    }
+    //2. 使用okhttp3.Call的enqueue方法
+    call.enqueue(new okhttp3.Callback() {
+      @Override public void onResponse(okhttp3.Call call, okhttp3.Response rawResponse)
+          throws IOException {
+        Response<T> response;
+        try {
+          //把okhttp3.Response转换成retrofit2的Response  
+          response = parseResponse(rawResponse);
+        } catch (Throwable e) {
+          callFailure(e);
+          return;
+        }
+        //3. 成功的回调
+        callSuccess(response);
+      }
+
+      @Override public void onFailure(okhttp3.Call call, IOException e) {
+        try {
+          //4. 失败的回调  
+          callback.onFailure(OkHttpCall.this, e);
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      }
+
+      private void callFailure(Throwable e) {
+        try {
+          callback.onFailure(OkHttpCall.this, e);
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      }
+
+      private void callSuccess(Response<T> response) {
+        try {
+          callback.onResponse(OkHttpCall.this, response);
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      }
+    });
+  }
+```
+1. OkHttpCall的enqueue方法和execute方法一样，先判断请求是否执行过了。如果没有执行，就构建一个okhttp3.Call，
+和execute方法不同的是，这里使用了okhttp3.Call的enqueue()方法，然后在回调方法里，回调我们传入的callback。
+
+先看一下 create 方法是怎么创建Service实例的
+
+```java
+public <T> T create(final Class<T> service) {
+    //1. 首先验证service是否合法
+    Utils.validateServiceInterface(service);
+    //2. 是否提前创建service里面的所有方法
+    if (validateEagerly) {
+      eagerlyValidateMethods(service);
+    }
+    //3. 创建service的动态代理
+    return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[] { service },
+        new InvocationHandler() {
+          private final Platform platform = Platform.get();
+
+          @Override public Object invoke(Object proxy, Method method, @Nullable Object[] args)
+              throws Throwable {
+             // service的所有方法调用，最终会转发到这里
+            // 如果是Object的方法，就正常调用
+            if (method.getDeclaringClass() == Object.class) {
+              return method.invoke(this, args);
+            }
+            //如果是default方法（Java8中的默认方法）,Android中不用管，一定是false
+            if (platform.isDefaultMethod(method)) {
+              return platform.invokeDefaultMethod(method, service, proxy, args);
+            }
+            //最关键的三行
+            ServiceMethod<Object, Object> serviceMethod =(ServiceMethod<Object, Object>) loadServiceMethod(method);
+            OkHttpCall<Object> okHttpCall = new OkHttpCall<>(serviceMethod, args);
+            return serviceMethod.callAdapter.adapt(okHttpCall);
+          }
+        });
+  }
+```
+这里插一句关于`Platform`,我们在Android中使用Retrofit,平台就是Android
+```java
+static class Android extends Platform {
+    //默认的回调执行器
+    @Override public Executor defaultCallbackExecutor() {
+      return new MainThreadExecutor();
+    }
+
+    @Override CallAdapter.Factory defaultCallAdapterFactory(@Nullable Executor callbackExecutor) {
+      if (callbackExecutor == null) throw new AssertionError();
+      return new ExecutorCallAdapterFactory(callbackExecutor);
+    }
+
+    static class MainThreadExecutor implements Executor {
+      //隐隐约约看到了熟悉的Handler。可以猜想，回调之所以是在主线程执行，还是使用handler来实现的  
+      private final Handler handler = new Handler(Looper.getMainLooper());
+
+      @Override public void execute(Runnable r) {
+        handler.post(r);
+      }
+    }
+  }
+```
+加载method对应的ServiceMethod。如果缓存中存在就直接返回，否则创建一个ServiceMethod加入缓存，然后返回。可见每个ServiceMethod只会创建一次。
+ServiceMethod把对接口方法的调用转为一个HTTP调用
+```java
+ServiceMethod<Object, Object> serviceMethod =(ServiceMethod<Object, Object>) loadServiceMethod(method);
+```
+```java
+private final Map<Method, ServiceMethod<?, ?>> serviceMethodCache = new ConcurrentHashMap<>();
+```
+```java
+ServiceMethod<?, ?> loadServiceMethod(Method method) {
+    ServiceMethod<?, ?> result = serviceMethodCache.get(method);
+    if (result != null) return result;
+
+    synchronized (serviceMethodCache) {
+      result = serviceMethodCache.get(method);
+      if (result == null) {
+        result = new ServiceMethod.Builder<>(this, method).build();
+        serviceMethodCache.put(method, result);
+      }
+    }
+    return result;
+  }
+```
+看一下ServiceMethod的构造函数
+```java
+ServiceMethod(Builder<R, T> builder) {
+    this.callFactory = builder.retrofit.callFactory();
+    this.callAdapter = builder.callAdapter;
+    this.baseUrl = builder.retrofit.baseUrl();
+    this.responseConverter = builder.responseConverter;
+    this.httpMethod = builder.httpMethod;
+    this.relativeUrl = builder.relativeUrl;
+    this.headers = builder.headers;
+    this.contentType = builder.contentType;
+    this.hasBody = builder.hasBody;
+    this.isFormEncoded = builder.isFormEncoded;
+    this.isMultipart = builder.isMultipart;
+    this.parameterHandlers = builder.parameterHandlers;
+  }
+```
+几个比较重要成员
+1. callFactory：用来创建`okhttp3.Call`的工厂。通常是一个OkHttpClient实例
+2. callAdapter：把一个响应类型为`R`的retrofit2.Call转化成`T`类型的对象。callAdapter的实例由构建
+Retrofit时候通过{Retrofit.Builder#addCallAdapterFactory(Factory)}方法设置
+3. responseConverter：负责把`okhttp3.ResponseBody`转化为对象,或者把对象转化为`okhttp3.RequestBody`。Converter实例
+由构建Retrofit时候通过{Retrofit.Builder#addConverterFactory(Factory)}设置
+4. parameterHandlers：负责解析 API 定义时每个方法的参数，并在构造 HTTP 请求时设置参数
+
+首先我们看一下，默认情况下上面四个成员的创建。
+```java
+this.callFactory = builder.retrofit.callFactory();
+```
+当我们构建一个默认的Retrofit实例的时候,在Retrofit.Builder的build方法中，默认传入了一个OkHttpClient实例。
+```java
+Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.github.com/")
+                .build();
+```
+```java
+ public Retrofit build() {
+      if (baseUrl == null) {
+        throw new IllegalStateException("Base URL required.");
+      }
+     
+      okhttp3.Call.Factory callFactory = this.callFactory;
+      if (callFactory == null) {
+        callFactory = new OkHttpClient();
+      }
+}
+```
+
 
 ### RxJava
 [给 Android 开发者的 RxJava 详解](https://gank.io/post/560e15be2dca930e00da1083)
@@ -315,5 +524,4 @@ Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Ob
     }
 ```
 * RxJava统一异常处理
-
  

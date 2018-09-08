@@ -45,4 +45,5 @@
     <string name="progress_format">%1d KB %2d KB</string>
     <string name="download">下载</string>
     <string name="wait_download_finish">正在下载，请稍后...</string>
+    <string name="simple_use_no_calladapter_factory_converter_factory">简单使用，不添加任何CallAdapter.Factory和Converter.Factory</string>
 </resources>

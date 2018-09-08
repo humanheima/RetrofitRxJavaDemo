@@ -12,6 +12,13 @@
         android:layout_height="match_parent"
         tools:context="com.hm.retrofitrxjavademo.ui.activity.OnlyRetrofitActivity">
 
+        <Button
+            android:id="@+id/btn_simple_use"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="simpleUse"
+            android:text="@string/simple_use_no_calladapter_factory_converter_factory" />
+
     </android.support.constraint.ConstraintLayout>
 </layout>
 
