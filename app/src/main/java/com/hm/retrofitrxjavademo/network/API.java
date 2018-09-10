@@ -3,6 +3,7 @@ package com.hm.retrofitrxjavademo.network;
 
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -46,6 +47,12 @@ public interface API {
 
     @GET("/")
     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
+
+    //@GET("/")
+    //Call<ResponseBody> getNowWeather(@Url String url, @QueryMap Map<String, Object> map);
+
+    @GET("/")
+    Call<ResponseBody> getNowWeather(@Query("name") List lists);
 
     /**添加头信息
      @GET("/")

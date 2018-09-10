@@ -5,24 +5,21 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.hm.retrofitrxjavademo.R;
-import com.hm.retrofitrxjavademo.databinding.ActivityOnlyRetrofitBinding;
-import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.API;
-import com.hm.retrofitrxjavademo.network.GitHubService;
-import com.hm.retrofitrxjavademo.network.api_entity.Repo;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
  * 单独使用 Retrofit
@@ -72,11 +69,12 @@ public class OnlyRetrofitActivity extends BaseActivity {
         });*/
 
         retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.github.com/")
+                .baseUrl("http://api.k780.com:88")
+                .client(new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor()).build())
                 .build();
     }
 
-    public void simpleUse(View view) {
+    /*public void simpleUse(View view) {
 
         GitHubService service = retrofit.create(GitHubService.class);
 
@@ -97,5 +95,34 @@ public class OnlyRetrofitActivity extends BaseActivity {
             }
         });
     }
+*/
+
+    public void simpleUse(View view) {
+
+        API service = retrofit.create(API.class);
+       /* HashMap<String, Object> map = new HashMap<>();
+        map.put("app", "weather.today");
+        map.put("weaid", 1);
+        map.put("appkey", 10003);
+        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
+        map.put("format", "json");*/
+        List list=new ArrayList();
+
+        Call<ResponseBody> listCall = service.getNowWeather(list);
+
+        listCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.d(TAG, "onResponse: " + response.toString());
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d(TAG, "onFailure: " + t.getMessage());
+
+            }
+        });
+    }
+
 
 }
