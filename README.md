@@ -524,4 +524,6 @@ Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Ob
     }
 ```
 * RxJava统一异常处理
+
+在Android平台下，Retrofit内置的CallAdapter的作用只是为了把请不请求的回调切换到主线程。线程切换内部还是使用的Handler
  
