@@ -48,11 +48,11 @@ public interface API {
     @GET("/")
     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
-    //@GET("/")
-    //Call<ResponseBody> getNowWeather(@Url String url, @QueryMap Map<String, Object> map);
-
     @GET("/")
-    Call<ResponseBody> getNowWeather(@Query("name") List lists);
+    Observable<HttpResult<NowWeatherBean>> getNowWeather( @QueryMap Map<String, Object> map);
+
+    /*@GET("/")
+    Call<ResponseBody> getNowWeather(@Query("name") List lists);*/
 
     /**添加头信息
      @GET("/")
