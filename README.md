@@ -8,6 +8,46 @@ Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。网络请求�
 
 [Android：手把手带你深入剖析 Retrofit 2.0 源码](https://blog.csdn.net/carson_ho/article/details/73732115)
 
+OkHttpCall的parseResponse()方法
+```java
+Response<T> parseResponse(okhttp3.Response rawResponse) throws IOException {
+    //...
+    ExceptionCatchingRequestBody catchingBody = new ExceptionCatchingRequestBody(rawBody);
+    try {
+      T body = serviceMethod.toResponse(catchingBody);
+      return Response.success(body, rawResponse);
+    } catch (RuntimeException e) {
+      catchingBody.throwIfCaught();
+      throw e;
+    }
+  }
+```
+ServiceMethod的toResponse()方法
+```java
+/** 构建一个方法用来把HTTP的响应体转换成我们希望的数据类型对象*/
+  R toResponse(ResponseBody body) throws IOException {
+    return responseConverter.convert(body);
+  }
+```
+默认情况下的responseConverter就是BuiltInConverters类的responseBodyConverter()方法返回的Converter对象。
+
+```java
+ @Override
+  public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations,
+      Retrofit retrofit) {
+    if (type == ResponseBody.class) {
+      return Utils.isAnnotationPresent(annotations, Streaming.class)
+          ? StreamingResponseBodyConverter.INSTANCE
+          : BufferingResponseBodyConverter.INSTANCE;
+    }
+    if (type == Void.class) {
+      return VoidResponseBodyConverter.INSTANCE;
+    }
+    return null;
+  }
+```
+可以看到默认情况下，Retrofit只能把`(okhttp3.ResponseBody body)`转化成okhttp3.ResponseBody类型的对象，或者返回null。
+
 ### RxJava
 [给 Android 开发者的 RxJava 详解](https://gank.io/post/560e15be2dca930e00da1083)
 
