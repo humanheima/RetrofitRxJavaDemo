@@ -9,6 +9,7 @@ import java.util.Map;
 import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
@@ -17,6 +18,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
+import retrofit2.http.QueryName;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
@@ -49,10 +51,11 @@ public interface API {
     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
     @GET("/")
-    Observable<HttpResult<NowWeatherBean>> getNowWeather( @QueryMap Map<String, Object> map);
+    Call<ResponseBody> getNowWeather(@Query("id")int id,@Query("name") String name );
 
-    /*@GET("/")
-    Call<ResponseBody> getNowWeather(@Query("name") List lists);*/
+    @FormUrlEncoded
+    @POST("/")
+    Call<ResponseBody> getNowWeather(@Field("name") List<String> list);
 
     /**添加头信息
      @GET("/")
