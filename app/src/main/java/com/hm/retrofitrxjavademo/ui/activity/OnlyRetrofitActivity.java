@@ -38,7 +38,6 @@ public class OnlyRetrofitActivity extends BaseActivity {
 
     private static final String TAG = "OnlyRetrofitActivity";
     private static final String BASE_URL = "http://api.k780.com";
-    private Retrofit retrofit;
 
     public static void launch(Context context) {
         Intent starter = new Intent(context, OnlyRetrofitActivity.class);
@@ -52,44 +51,6 @@ public class OnlyRetrofitActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor()).build())
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        API api = retrofit.create(API.class);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("app", "weather.today");
-        map.put("weaid", 1);
-        map.put("appkey", 10003);
-        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
-        map.put("format", "json");
-        api.getNowWeather(map).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<HttpResult<NowWeatherBean>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(HttpResult<NowWeatherBean> nowWeatherBeanHttpResult) {
-                        Log.e(TAG, "onNext: " + nowWeatherBeanHttpResult.getData().getCitynm());
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "onError: " + e.getMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-
 
     }
 
@@ -117,6 +78,44 @@ public class OnlyRetrofitActivity extends BaseActivity {
 */
 
     public void simpleUse(View view) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor()).build())
+                //.addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        API api = retrofit.create(API.class);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("app", "weather.today");
+        map.put("weaid", 1);
+        map.put("appkey", 10003);
+        map.put("sign", "b59bc3ef6191eb9f747dd4e83c99f2a4");
+        map.put("format", "json");
+        api.getNowWeather(map)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<NowWeatherBean>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(NowWeatherBean nowWeatherBeanHttpResult) {
+                        Log.e(TAG, "onNext: " + nowWeatherBeanHttpResult.getResult().toString());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
 
 
     }

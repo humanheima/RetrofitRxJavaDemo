@@ -30,7 +30,7 @@
     <string name="reduce">reduce</string>
     <string name="concat">concat</string>
     <string name="throttlewithtimeout">throttleWithTimeOut</string>
-    <string name="rxjava2_source_code">RxJava2 源码</string>
+    <string name="rxjava2_source_code">RxJava2</string>
     <string name="retrofit_rxjava">retrofit结合RxJava使用</string>
     <string name="get_movie">豆瓣电影top250</string>
     <string name="get_today_weather">获取今天的天气</string>

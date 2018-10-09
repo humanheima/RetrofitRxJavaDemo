@@ -18,25 +18,43 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.BackpressureStrategy;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.Maybe;
+import io.reactivex.MaybeEmitter;
+import io.reactivex.MaybeOnSubscribe;
+import io.reactivex.Notification;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
+import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.BooleanSupplier;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.AsyncSubject;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
 
 /**
  * 参考链接： https://www.jianshu.com/p/464fa025229e
  */
+@SuppressLint("CheckResult")
 public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
     private static final String TAG = "RxJava2Activity";
@@ -56,8 +74,394 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
     @Override
     protected void initData() {
+        //testDo();
+        //testColdObservable();
+        //testColdObservableToHot();
+    }
+
+    public void testPublishSubject(View view) {
+        PublishSubject<String> subject = PublishSubject.create();
+        subject.onNext("subject1");
+        subject.onNext("subject2");
+
+        subject.subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, "testPublishSubject: " + s);
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                Log.d(TAG, "testPublishSubject: onError");
+            }
+        }, new Action() {
+            @Override
+            public void run() throws Exception {
+                Log.d(TAG, "testPublishSubject: onComplete");
+
+            }
+        });
+        subject.onNext("subject3");
+        subject.onNext("subject4");
+        subject.onComplete();
+    }
+
+    public void testReplaySubject(View view) {
+        ReplaySubject<String> subject = ReplaySubject.createWithSize(1);
+        subject.onNext("subject1");
+        subject.onNext("subject2");
+
+        subject.subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, "testReplaySubject: " + s);
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                Log.d(TAG, "testReplaySubject: onError");
+            }
+        }, new Action() {
+            @Override
+            public void run() throws Exception {
+                Log.d(TAG, "testReplaySubject: onComplete");
+
+            }
+        });
+        subject.onNext("subject3");
+        subject.onNext("subject4");
+    }
+
+    public void testBehaviorSubject(View view) {
+        BehaviorSubject<String> subject = BehaviorSubject.createDefault("subject1");
+        subject.onNext("subject2");
+
+        subject.subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, "testBehaviorSubject: " + s);
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                Log.d(TAG, "testBehaviorSubject: onError");
+            }
+        }, new Action() {
+            @Override
+            public void run() throws Exception {
+                Log.d(TAG, "testBehaviorSubject: onComplete");
+
+            }
+        });
+        subject.onNext("subject3");
+        subject.onNext("subject4");
+    }
+
+    public void testAsyncSubject(View view) {
+        AsyncSubject<String> subject = AsyncSubject.create();
+        subject.onNext("subject1");
+        subject.onNext("subject2");
+        subject.subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, "testAsyncSubject: " + s);
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                Log.d(TAG, "testAsyncSubject: onError");
+            }
+        }, new Action() {
+            @Override
+            public void run() throws Exception {
+                Log.d(TAG, "testAsyncSubject: onComplete");
+
+            }
+        });
+        subject.onNext("subject3");
+        subject.onNext("subject4");
+        //onComplete必须要调用，才开始发送数据
+        subject.onComplete();
+    }
+
+
+    private void testColdObservable() {
+
+        Consumer<Long> consumer1 = new Consumer<Long>() {
+            @Override
+            public void accept(Long s) throws Exception {
+                Log.d(TAG, "consume1 receive " + s);
+            }
+        };
+        Consumer<Long> consumer2 = new Consumer<Long>() {
+            @Override
+            public void accept(Long s) throws Exception {
+                Log.d(TAG, "    consume2 receive " + s);
+            }
+        };
+
+        Observable<Long> observable = Observable.create(new ObservableOnSubscribe<Long>() {
+            @Override
+            public void subscribe(ObservableEmitter<Long> emitter) throws Exception {
+                Observable.interval(10, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .take(10)
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                emitter.onNext(aLong);
+                            }
+                        });
+            }
+        }).observeOn(Schedulers.newThread());
+
+        observable.subscribe(consumer1);
+        observable.subscribe(consumer2);
+    }
+
+    private void testColdObservableToHot() {
+
+        Consumer<Long> consumer1 = new Consumer<Long>() {
+            @Override
+            public void accept(Long s) throws Exception {
+                Log.d(TAG, "consume1 receive " + s);
+            }
+        };
+        Consumer<Long> consumer2 = new Consumer<Long>() {
+            @Override
+            public void accept(Long s) throws Exception {
+                Log.d(TAG, "    consume2 receive " + s);
+            }
+        };
+        Consumer<Long> consumer3 = new Consumer<Long>() {
+            @Override
+            public void accept(Long s) throws Exception {
+                Log.d(TAG, "    consume3 receive " + s);
+            }
+        };
+
+        ConnectableObservable<Long> observable = Observable.create(new ObservableOnSubscribe<Long>() {
+            @Override
+            public void subscribe(ObservableEmitter<Long> emitter) throws Exception {
+                Observable.interval(10, TimeUnit.MILLISECONDS, Schedulers.computation())
+                        .take(10)
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                emitter.onNext(aLong);
+                            }
+                        });
+            }
+        }).observeOn(Schedulers.newThread()).publish();
+
+        observable.connect();
+
+        observable.subscribe(consumer1);
+        observable.subscribe(consumer2);
+
+        try {
+            Thread.sleep(20L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        observable.subscribe(consumer3);
+        try {
+            Thread.sleep(100L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testRepeatWhen(View view) {
+        Observable.range(0, 9).repeatWhen(new Function<Observable<Object>, ObservableSource<?>>() {
+            @Override
+            public ObservableSource<?> apply(Observable<Object> objectObservable) throws Exception {
+                return Observable.timer(10, TimeUnit.SECONDS);
+            }
+        })
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        Log.e(TAG, "accept: " + integer);
+                    }
+                });
+    }
+
+    public void testRepeatUntil(View view) {
+        final long startTime = System.currentTimeMillis();
+        Observable.interval(500, TimeUnit.MILLISECONDS)
+                .take(5)
+
+                .repeatUntil(new BooleanSupplier() {
+                    @Override
+                    public boolean getAsBoolean() throws Exception {
+                        return System.currentTimeMillis() - startTime > 5000;
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        Log.e(TAG, "accept: " + aLong);
+
+                    }
+                });
+    }
+
+
+    /**
+     * Maybe只能发射0或者1个数据
+     *
+     * @param view
+     */
+    public void testMaybe(View view) {
+        Maybe.create(new MaybeOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(MaybeEmitter<Integer> emitter) throws Exception {
+                //emitter.onComplete();
+                emitter.onSuccess(1);
+                emitter.onSuccess(2);
+            }
+        }).subscribe(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) throws Exception {
+                Log.d(TAG, "accept: " + integer);
+
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+
+            }
+        }, new Action() {
+            @Override
+            public void run() throws Exception {
+
+            }
+        });
+    }
+
+
+    public void testCompletable(View view) {
+        Completable.create(new CompletableOnSubscribe() {
+            @Override
+            public void subscribe(CompletableEmitter emitter) throws Exception {
+                TimeUnit.SECONDS.sleep(1);
+                emitter.onComplete();
+            }
+        }).andThen(Observable.range(1, 10))
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        Log.d(TAG, "accept: " + integer);
+                    }
+                });
+    }
+
+    private void testSingle() {
+        Single.create(new SingleOnSubscribe<String>() {
+            @Override
+            public void subscribe(SingleEmitter<String> emitter) throws Exception {
+                emitter.onSuccess("onSuccess");
+            }
+        }).subscribe(new BiConsumer<String, Throwable>() {
+            @Override
+            public void accept(String s, Throwable throwable) throws Exception {
+
+            }
+        });
+    }
+
+
+    private void fun1() {
+        Observable.just("hello world")
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    private void testDo() {
+        Observable.just("hello world")
+                .doOnNext(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.d(TAG, "doOnNext: ");
+
+                    }
+                })
+                .doAfterNext(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.d(TAG, "doAfterNext: ");
+                    }
+                })
+                .doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "doOnComplete: ");
+                    }
+                })
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        Log.d(TAG, "doOnSubscribe: ");
+                    }
+                })
+                .doAfterTerminate(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "doAfterTerminate: ");
+                    }
+                })
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "doFinally: ");
+                    }
+                })
+                .doOnEach(new Consumer<Notification<String>>() {
+                    @Override
+                    public void accept(Notification<String> stringNotification) throws Exception {
+                        Log.d(TAG, "doOnEach: ");
+                    }
+                })
+                .doOnLifecycle(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        Log.d(TAG, "doOnLifecycle: ");
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "doAfterNext: ");
+                    }
+                }).subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, "receive message");
+            }
+        });
 
     }
+
 
     @SuppressLint("CheckResult")
     public void testRetry(View view) {
@@ -412,6 +816,7 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
     public void request(View view) {
         mSubscription.request(95);
     }
+
 
     @Override
     protected void onDestroy() {

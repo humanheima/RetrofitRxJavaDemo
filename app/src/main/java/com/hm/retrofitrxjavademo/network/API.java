@@ -51,11 +51,11 @@ public interface API {
     Call<NowWeatherBean> retrofitGetNowWeather(@QueryMap Map<String, Object> map);
 
     @GET("/")
-    Call<ResponseBody> getNowWeather(@Query("id")int id,@Query("name") String name );
+    Call<ResponseBody> getNowWeather(@Query("id") int id, @Query("name") String name);
 
     @FormUrlEncoded
     @POST("/")
-    Call<ResponseBody> getNowWeather(@Field("name") List<String> list);
+    Observable<NowWeatherBean> getNowWeather(@FieldMap Map<String, Object> map);
 
     /**添加头信息
      @GET("/")
