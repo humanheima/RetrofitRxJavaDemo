@@ -6,6 +6,9 @@
     <string name="rx_java_operator">RxJava操作符</string>
     <string name="test_rxjava_operator">测试RxJava操作符</string>
     <string name="create">create</string>
+    <string name="amb">amb</string>
+    <string name="btn_default_if_empty">btn_default_if_empty</string>
+    <string name="take">take</string>
     <string name="defer">defer</string>
     <string name="from">from</string>
     <string name="interval">interval</string>
@@ -14,12 +17,14 @@
     <string name="retry_when">retry_when</string>
     <string name="repeat">repeat</string>
     <string name="buffer">buffer</string>
+    <string name="window">window</string>
     <string name="flatmap">flatMap</string>
     <string name="group_by">group_by</string>
     <string name="scan">scan</string>
     <string name="debounce">debounce</string>
     <string name="sample">sample</string>
     <string name="skip">skip</string>
+    <string name="skip_last">skip_last</string>
     <string name="combinelatest">combineLatest</string>
     <string name="zip">zip</string>
     <string name="use_catch">use_catch</string>

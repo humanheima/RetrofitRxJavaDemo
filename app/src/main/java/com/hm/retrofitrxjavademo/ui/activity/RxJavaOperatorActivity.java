@@ -1,5 +1,6 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -45,6 +46,9 @@ import static io.reactivex.Observable.just;
  * RxJava 操作符
  */
 
+@SuppressWarnings("unchecked")
+@SuppressLint("CheckResult")
+
 public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorBinding> {
 
     public final static String TAG = "RxJavaOperatorActivity";
@@ -87,8 +91,17 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
 
     public void click(View view) {
         switch (view.getId()) {
+            case R.id.btn_amb:
+                amb();
+                break;
+            case R.id.btn_default_if_empty:
+                defaultIfEmpty();
+                break;
             case R.id.btn_create:
                 create();
+                break;
+            case R.id.btn_take:
+                take();
                 break;
             case R.id.btn_defer:
                 defer();
@@ -114,6 +127,9 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             case R.id.btn_buffer:
                 buffer();
                 break;
+            case R.id.btn_window:
+                window();
+                break;
             case R.id.btn_flatMap:
                 flatMap();
                 break;
@@ -131,6 +147,9 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                 break;
             case R.id.btn_skip:
                 skip();
+                break;
+            case R.id.btn_skip_last:
+                skipLast();
                 break;
             case R.id.btn_combine_latest:
                 combineLatest();
@@ -165,6 +184,28 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             default:
                 break;
         }
+    }
+
+    private void defaultIfEmpty() {
+        /*Observable.empty().defaultIfEmpty(8)
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        Log.d(TAG, "accept: " + o);
+                    }
+                });*/
+        Observable.empty().switchIfEmpty(Observable.just(1,2,3))
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        Log.d(TAG, "accept: " + o);
+                    }
+                });
+    }
+
+    private void amb() {
+        Observable.ambArray(Observable.just(1, 2, 3).delay(1, TimeUnit.SECONDS), Observable.just(4, 5, 6))
+                .subscribe(observer);
     }
 
     /**
@@ -524,6 +565,58 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         });
     }
 
+    private void take() {
+        Observable.intervalRange(0, 10, 1, 1, TimeUnit.SECONDS)
+                .take(3, TimeUnit.SECONDS)
+                .subscribe(new Observer<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.e(TAG, "onSubscribe: ");
+                    }
+
+                    @Override
+                    public void onNext(Long integer) {
+                        Log.e(TAG, "integer=" + integer);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "onComplete");
+                    }
+                });
+    }
+
+    private void takeLast() {
+        Observable.just(1, 2, 3, 4, 50)
+                .takeLast(3)
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.e(TAG, "onSubscribe: ");
+                    }
+
+                    @Override
+                    public void onNext(Integer integer) {
+                        Log.e(TAG, "integer=" + integer);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "onComplete");
+                    }
+                });
+    }
+
     /**
      * defer直到有观察者订阅时才创建Observable，并且为每个观察者创建一个新的Observable.
      * 而just操作符是在创建Observable就进行了赋值操作
@@ -725,18 +818,29 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
     }
 
     private void window() {
-        Observable.interval(1, TimeUnit.SECONDS)
-                .take(12)
-                .window(3, TimeUnit.SECONDS)
-                .subscribe(new Consumer<Observable<Long>>() {
+        Observable.range(1, 10)
+                .window(2)
+                .subscribe(new Consumer<Observable<Integer>>() {
                     @Override
-                    public void accept(Observable<Long> longObservable) throws Exception {
-                        longObservable.subscribe(new Consumer<Long>() {
+                    public void accept(Observable<Integer> integerObservable) throws Exception {
+                        Log.d(TAG, "accept: onNext");
+                        integerObservable.subscribe(new Consumer<Integer>() {
                             @Override
-                            public void accept(Long aLong) throws Exception {
-                                Log.e(TAG, "Next:" + aLong);
+                            public void accept(Integer integer) throws Exception {
+                                Log.d(TAG, "accept: onNext:" + integer);
                             }
                         });
+
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "run: onCompleted");
                     }
                 });
     }
@@ -1504,6 +1608,28 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                     @Override
                     public void accept(Long aLong) throws Exception {
                         Log.e(TAG, "Next: " + aLong);
+                    }
+                });
+    }
+
+    private void skipLast() {
+        Observable.interval(1, TimeUnit.SECONDS)
+                .take(10)
+                .skipLast(3, TimeUnit.SECONDS)
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        Log.e(TAG, "Next: " + aLong);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+
                     }
                 });
     }
