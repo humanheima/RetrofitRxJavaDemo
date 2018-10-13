@@ -16,7 +16,9 @@ import com.hm.retrofitrxjavademo.model.Dog;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +29,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -37,6 +40,7 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
+import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observables.GroupedObservable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -52,12 +56,55 @@ import static io.reactivex.Observable.just;
 public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorBinding> {
 
     public final static String TAG = "RxJavaOperatorActivity";
+    /**
+     * defer 操作符，just操作符是在创建Observable就进行了赋值操作，
+     * 而defer是在订阅者订阅时才创建Observable，此时才进行真正的赋值操作
+     */
+
+    //初始的时候的时候i=10
+    int i = 10;
     private Observer<Integer> observer;
     private Observer<Long> longObserver;
+    /**
+     * concat 连接多个操作符，只有在前一个observable onCompleted以后，下一个observable才会开始发射数据
+     * ,如果前一个observable onError，那么这个错误会立即传递给观察者。
+     * 我们可以利用这个特性来实现网络请求的优化，memoryCache ,diskCache,network
+     * the link
+     * https://mcxiaoke.gitbooks.io/rxdocs/content/operators/Mathematical.html
+     */
+    private String concatData[] = {"memoryCache", null, "network"};
+    /**
+     * defer直到有观察者订阅时才创建Observable，并且为每个观察者创建一个新的Observable.
+     * 而just操作符是在创建Observable就进行了赋值操作
+     */
+    private int deferValue = 1;
+    /**
+     * buffer操作符把一个Observable 变换成另外一个，原来的Observable正常发射数据，
+     * 变换后的Observable发射这些数据的缓存集合，订阅者处理后，清空buffer列表，
+     * 同时接收下一次收集的结果并提交给订阅者，周而复始。如果原来的Observable
+     * 发射了一个onError通知， buffer 会立即传递这个通知，而不是首先发射缓存的数据，
+     * 即使在这之前，缓存中有来自原来的Observable 的数据，也不会发射出去。
+     */
+    private int num = 1;
+    private String[] mails = new String[]{"Here is an email!", "Another email!", "Yet another email!"};
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, RxJavaOperatorActivity.class);
         context.startActivity(intent);
+    }
+
+    public static <String> ObservableTransformer<Integer, java.lang.String> transformer() {
+        return new ObservableTransformer<Integer, java.lang.String>() {
+            @Override
+            public ObservableSource<java.lang.String> apply(Observable<Integer> upstream) {
+                return upstream.map(new Function<Integer, java.lang.String>() {
+                    @Override
+                    public java.lang.String apply(Integer integer) throws Exception {
+                        return java.lang.String.valueOf(integer);
+                    }
+                });
+            }
+        };
     }
 
     @Override
@@ -113,9 +160,22 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
 
     public void click(View view) {
         switch (view.getId()) {
+            case R.id.btn_transform:
+                transform();
+                break;
+            case R.id.btn_ref_count:
+                refCount();
+                break;
+            case R.id.btn_connect:
+                connect();
+                break;
+            case R.id.btn_join:
+                join();
+                break;
             case R.id.btn_take_while:
                 takeWhile();
-                break;case R.id.btn_take_until:
+                break;
+            case R.id.btn_take_until:
                 takeUntil();
                 break;
             case R.id.btn_skip_until:
@@ -222,6 +282,189 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         }
     }
 
+    private void transform() {
+        Observable.just(123, 456)
+                .compose(transformer())
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.e(TAG, "accept: s= " + s);
+                    }
+                });
+    }
+
+
+    private void refCount() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        Observable<Long> obs = Observable.interval(1, TimeUnit.SECONDS).take(6);
+
+        ConnectableObservable<Long> connectableObservable = obs.publish();
+        Observable obsRefCount = connectableObservable.refCount();
+
+        connectableObservable.subscribe(new Observer<Long>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                Log.e(TAG, "subscriber1: onNext" + aLong + "->time:" + sdf.format(new Date()));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "subscriber1: onError");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "subscriber1: onComplete");
+            }
+        });
+        connectableObservable.delaySubscription(3, TimeUnit.SECONDS)
+                .subscribe(new Observer<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Long aLong) {
+                        Log.e(TAG, "subscriber2: onNext" + aLong + "->time:" + sdf.format(new Date()));
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "subscriber2: onError");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "subscriber1: onComplete");
+                    }
+                });
+        obsRefCount.subscribe(new Observer<Long>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                Log.e(TAG, "obsRefCount1:onNext: " + aLong + "->time:" + sdf.format(new Date()));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "obsRefCount1:onError: ");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "obsRefCount1:onComplete: ");
+            }
+        });
+        obsRefCount.delaySubscription(3, TimeUnit.SECONDS)
+                .subscribe(new Observer<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Long aLong) {
+                        Log.e(TAG, "obsRefCount2:onNext: " + aLong + "->time:" + sdf.format(new Date()));
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "obsRefCount2:onError: ");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "obsRefCount2:onComplete: ");
+                    }
+                });
+        connectableObservable.connect();
+    }
+
+    private void connect() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        Observable<Long> obs = Observable.interval(1, TimeUnit.SECONDS).take(6);
+
+        ConnectableObservable<Long> connectableObservable = obs.publish();
+        connectableObservable.subscribe(new Observer<Long>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                Log.e(TAG, "subscriber1: onNext" + aLong + "->time:" + sdf.format(new Date()));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "subscriber1: onError");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "subscriber1: onComplete");
+            }
+        });
+        connectableObservable.delaySubscription(3, TimeUnit.SECONDS)
+                .subscribe(new Observer<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Long aLong) {
+                        Log.e(TAG, "subscriber2: onNext" + aLong + "->time:" + sdf.format(new Date()));
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "subscriber2: onError");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "subscriber1: onComplete");
+                    }
+                });
+        connectableObservable.connect();
+    }
+
+    private void join() {
+        Observable<Integer> o1 = Observable.just(1, 2, 3).delay(200, TimeUnit.MILLISECONDS);
+        Observable<Integer> o2 = Observable.just(4, 5, 6);
+        o1.join(o2, new Function<Integer, ObservableSource<String>>() {
+            @Override
+            public ObservableSource<String> apply(Integer integer) throws Exception {
+                return Observable.just(String.valueOf(integer)).delay(200, TimeUnit.MILLISECONDS);
+            }
+        }, new Function<Integer, ObservableSource<String>>() {
+            @Override
+            public ObservableSource<String> apply(Integer integer) throws Exception {
+                return Observable.just(String.valueOf(integer)).delay(200, TimeUnit.MILLISECONDS);
+            }
+        }, new BiFunction<Integer, Integer, String>() {
+            @Override
+            public String apply(Integer integer, Integer integer2) throws Exception {
+                return integer + ":" + integer2;
+            }
+        }).subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.e(TAG, "accept: " + s);
+            }
+        });
+    }
+
     private void skipWhile() {
         Observable.just(1, 2, 3, 4, 5)
                 .skipWhile(new Predicate<Integer>() {
@@ -294,15 +537,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         Observable.ambArray(Observable.just(1, 2, 3).delay(1, TimeUnit.SECONDS), Observable.just(4, 5, 6))
                 .subscribe(observer);
     }
-
-    /**
-     * concat 连接多个操作符，只有在前一个observable onCompleted以后，下一个observable才会开始发射数据
-     * ,如果前一个observable onError，那么这个错误会立即传递给观察者。
-     * 我们可以利用这个特性来实现网络请求的优化，memoryCache ,diskCache,network
-     * the link
-     * https://mcxiaoke.gitbooks.io/rxdocs/content/operators/Mathematical.html
-     */
-    private String concatData[] = {"memoryCache", null, "network"};
 
     private void concat() {
        /* Observable<Integer> ob1 = Observable.create(new ObservableOnSubscribe<Integer>() {
@@ -678,6 +912,8 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                 });
     }
 
+    //变换操作符
+
     private void takeLast() {
         Observable.just(1, 2, 3, 4, 50)
                 .takeLast(3)
@@ -703,12 +939,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                     }
                 });
     }
-
-    /**
-     * defer直到有观察者订阅时才创建Observable，并且为每个观察者创建一个新的Observable.
-     * 而just操作符是在创建Observable就进行了赋值操作
-     */
-    private int deferValue = 1;
 
     private void defer() {
         Observable<Integer> observable = Observable.defer(new Callable<ObservableSource<? extends Integer>>() {
@@ -776,18 +1006,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                     }
                 });
     }
-
-    //变换操作符
-
-    /**
-     * buffer操作符把一个Observable 变换成另外一个，原来的Observable正常发射数据，
-     * 变换后的Observable发射这些数据的缓存集合，订阅者处理后，清空buffer列表，
-     * 同时接收下一次收集的结果并提交给订阅者，周而复始。如果原来的Observable
-     * 发射了一个onError通知， buffer 会立即传递这个通知，而不是首先发射缓存的数据，
-     * 即使在这之前，缓存中有来自原来的Observable 的数据，也不会发射出去。
-     */
-    private int num = 1;
-    private String[] mails = new String[]{"Here is an email!", "Another email!", "Yet another email!"};
 
     public void buffer() {
         //buffer(ObservableSource<B> boundary, final int initialCapacity)
@@ -1041,7 +1259,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                 .subscribe(observer);
     }
 
-
     /**
      * concatMap操作符
      * cancatMap操作符与flatMap操作符类似，都是把Observable产生的结果转换成多个Observable，
@@ -1294,7 +1511,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         return null;
     }
 
-
     /**
      * 5. 线程控制：Scheduler (二)
      * 除了灵活的变换，RxJava 另一个牛逼的地方，就是线程的自由控制。
@@ -1405,14 +1621,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             }
         }).start();*/
     }
-
-    /**
-     * defer 操作符，just操作符是在创建Observable就进行了赋值操作，
-     * 而defer是在订阅者订阅时才创建Observable，此时才进行真正的赋值操作
-     */
-
-    //初始的时候的时候i=10
-    int i = 10;
 
     public void compareJustAndDefer() {
         Observable<Integer> justObservable = just(i);
@@ -1748,7 +1956,6 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                         return aLong * 10;
                     }
                 }).take(5);
-
         Observable.combineLatest(observable1, observable2, new BiFunction<Long, Long, Long>() {
             @Override
             public Long apply(Long aLong, Long aLong2) throws Exception {

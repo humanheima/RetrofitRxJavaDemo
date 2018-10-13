@@ -16,6 +16,38 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/btn_transform"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/transform"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_ref_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/ref_count"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/connect"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_join"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/join"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btn_take_while"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

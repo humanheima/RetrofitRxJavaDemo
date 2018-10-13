@@ -12,6 +12,10 @@
     <string name="skipWhile">skipWhile</string>
     <string name="takeUntil">takeUntil</string>
     <string name="takeWhile">takeWhile</string>
+    <string name="join">join</string>
+    <string name="transform">transform</string>
+    <string name="ref_count">refCount</string>
+    <string name="connect">connect</string>
     <string name="btn_default_if_empty">btn_default_if_empty</string>
     <string name="take">take</string>
     <string name="defer">defer</string>
