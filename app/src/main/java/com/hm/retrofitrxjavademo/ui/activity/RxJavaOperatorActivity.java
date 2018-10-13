@@ -53,6 +53,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
 
     public final static String TAG = "RxJavaOperatorActivity";
     private Observer<Integer> observer;
+    private Observer<Long> longObserver;
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, RxJavaOperatorActivity.class);
@@ -87,12 +88,47 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                 Log.e(TAG, "onComplete: ");
             }
         };
+        longObserver = new Observer<Long>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.e(TAG, "onSubscribe: ");
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                Log.e(TAG, "onNext: " + aLong);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: " + e);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "onComplete: ");
+            }
+        };
     }
 
     public void click(View view) {
         switch (view.getId()) {
+            case R.id.btn_take_while:
+                takeWhile();
+                break;case R.id.btn_take_until:
+                takeUntil();
+                break;
+            case R.id.btn_skip_until:
+                skipUntil();
+                break;
+            case R.id.btn_skip_while:
+                skipWhile();
+                break;
             case R.id.btn_amb:
                 amb();
+                break;
+            case R.id.btn_sequence_equal:
+                sequenceEqual();
                 break;
             case R.id.btn_default_if_empty:
                 defaultIfEmpty();
@@ -186,6 +222,57 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         }
     }
 
+    private void skipWhile() {
+        Observable.just(1, 2, 3, 4, 5)
+                .skipWhile(new Predicate<Integer>() {
+                    @Override
+                    public boolean test(Integer aLong) throws Exception {
+                        return aLong <= 2;
+                    }
+                })
+                .subscribe(observer);
+    }
+
+    private void takeWhile() {
+        Observable.just(1, 2, 3, 4, 5, 6, 7)
+                .takeWhile(new Predicate<Integer>() {
+                    @Override
+                    public boolean test(Integer integer) throws Exception {
+                        return integer <= 4;
+                    }
+                })
+                .subscribe(observer);
+
+    }
+
+    private void takeUntil() {
+        Observable.just(1, 2, 3, 4, 5, 6, 7)
+                .takeUntil(new Predicate<Integer>() {
+                    @Override
+                    public boolean test(Integer integer) throws Exception {
+                        return integer == 5;
+                    }
+                })
+                .subscribe(observer);
+
+    }
+
+    private void skipUntil() {
+        Observable.intervalRange(1, 9, 0, 1, TimeUnit.MILLISECONDS)
+                .skipUntil(Observable.timer(4, TimeUnit.MILLISECONDS))
+                .subscribe(longObserver);
+    }
+
+    private void sequenceEqual() {
+        Observable.sequenceEqual(Observable.just(1, 2, 3, 4, 5), Observable.just(1, 2, 3, 4))
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        Log.d(TAG, "accept: " + aBoolean);
+                    }
+                });
+    }
+
     private void defaultIfEmpty() {
         /*Observable.empty().defaultIfEmpty(8)
                 .subscribe(new Consumer<Object>() {
@@ -194,7 +281,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                         Log.d(TAG, "accept: " + o);
                     }
                 });*/
-        Observable.empty().switchIfEmpty(Observable.just(1,2,3))
+        Observable.empty().switchIfEmpty(Observable.just(1, 2, 3))
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {

@@ -7,6 +7,11 @@
     <string name="test_rxjava_operator">测试RxJava操作符</string>
     <string name="create">create</string>
     <string name="amb">amb</string>
+    <string name="sequenceEqual">sequenceEqual</string>
+    <string name="skipUntil">skipUntil</string>
+    <string name="skipWhile">skipWhile</string>
+    <string name="takeUntil">takeUntil</string>
+    <string name="takeWhile">takeWhile</string>
     <string name="btn_default_if_empty">btn_default_if_empty</string>
     <string name="take">take</string>
     <string name="defer">defer</string>

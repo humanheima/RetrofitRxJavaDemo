@@ -16,6 +16,46 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/btn_take_while"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/takeWhile"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_take_until"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/takeUntil"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_skip_while"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/skipWhile"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_skip_until"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/skipUntil"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_sequence_equal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/sequenceEqual"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btn_amb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
