@@ -16,6 +16,14 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/btn_parallel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/parallel"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btn_transform"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

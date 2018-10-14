@@ -45,6 +45,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
             case R.id.btn_test_rxjava_operator:
                 RxJavaOperatorActivity.launch(this);
                 break;
+            case R.id.btn_test_rxbinding:
+                RxBindingActivity.launch(this);
+                break;
             case R.id.btn_retrofit_rxjava:
                 RetrofitRxJavaActivity.launch(this);
                 break;

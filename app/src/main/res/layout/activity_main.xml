@@ -22,6 +22,14 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/btn_test_rxbinding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClick"
+                android:text="@string/test_rxbinding"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btn_test_rxjava_operator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -70,8 +78,8 @@
             <Button
                 android:id="@+id/btn_source_code"
                 android:layout_width="wrap_content"
-                android:onClick="onClick"
                 android:layout_height="wrap_content"
+                android:onClick="onClick"
                 android:text="@string/rxjava2_source_code"
                 android:textAllCaps="false" />
         </LinearLayout>

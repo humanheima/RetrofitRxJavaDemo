@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -42,6 +43,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observables.GroupedObservable;
+import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.schedulers.Schedulers;
 
 import static io.reactivex.Observable.just;
@@ -160,6 +162,9 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
 
     public void click(View view) {
         switch (view.getId()) {
+            case R.id.btn_parallel:
+                parallel();
+                break;
             case R.id.btn_transform:
                 transform();
                 break;
@@ -280,6 +285,24 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             default:
                 break;
         }
+    }
+
+    private void parallel() {
+        ParallelFlowable<Integer> parallelFlowable = Flowable.range(1, 100).parallel();
+        parallelFlowable.runOn(Schedulers.io())
+                .map(new Function<Integer, String>() {
+                    @Override
+                    public String apply(Integer integer) throws Exception {
+                        return integer.toString();
+                    }
+                })
+                .sequential()
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.e(TAG, "accept: " + s);
+                    }
+                });
     }
 
     private void transform() {
@@ -1940,7 +1963,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
      * 最近发射的数据进行组合（每个Observable贡献一个），然后发射出去。
      */
     public void combineLatest() {
-        //产生0,5,10,15,20数列
+       /* //产生0,5,10,15,20数列
         Observable<Long> observable1 = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
                 .map(new Function<Long, Long>() {
                     @Override
@@ -1966,7 +1989,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
             public void accept(Long aLong) throws Exception {
                 Log.e(TAG, "Next: " + aLong);
             }
-        });
+        });*/
         //输出结果
         /**
          * 01-10 12:22:32.635 22138-22281/com.hm.retrofitrxjavademo E/RxJavaOperatorActivity: Next: 0
@@ -1980,6 +2003,24 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
          01-10 12:22:36.634 22138-22281/com.hm.retrofitrxjavademo E/RxJavaOperatorActivity: Next: 60
          01-10 12:22:36.635 22138-22281/com.hm.retrofitrxjavademo E/RxJavaOperatorActivity: Sequence complete.
          */
+        Observable<Integer> observable1 = Observable.just(1, 2, 3);
+        Observable<Integer> observable2 = Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+
+            }
+        });
+        Observable.combineLatest(observable1, observable2, new BiFunction<Integer, Integer, String>() {
+            @Override
+            public String apply(Integer integer, Integer integer2) throws Exception {
+                return integer + "," + integer;
+            }
+        }).subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.e(TAG, "combineLatest accept: ");
+            }
+        });
     }
 
     /**
