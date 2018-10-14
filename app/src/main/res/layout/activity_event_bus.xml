@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".ui.activity.EventBusActivity">
+
+        <Button
+            android:id="@+id/btn_post_simple_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/post_simple_event"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btn_test_relay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/relay"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btn_test_sticky_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stick_event"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+</layout>

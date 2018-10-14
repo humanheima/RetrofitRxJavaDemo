@@ -79,4 +79,10 @@ public abstract class BaseActivity<V extends ViewDataBinding> extends AppCompatA
             loadingDialog.dismiss();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.clear();
+    }
 }

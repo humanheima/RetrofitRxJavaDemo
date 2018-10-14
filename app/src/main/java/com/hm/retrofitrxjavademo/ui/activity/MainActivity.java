@@ -9,10 +9,18 @@ import android.widget.Toast;
 
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityMainBinding;
+import com.hm.retrofitrxjavademo.event.ExceptionEvent;
+import com.hm.retrofitrxjavademo.event.SimpleEvent;
+import com.hm.retrofitrxjavademo.event.StickEvent;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
+import com.hm.retrofitrxjavademo.util.RxBus1;
+import com.hm.retrofitrxjavademo.util.RxBus2;
+import com.hm.retrofitrxjavademo.util.RxBus3;
+import com.hm.retrofitrxjavademo.util.ToastUtil;
 
 import java.util.List;
 
+import io.reactivex.functions.Consumer;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> implements EasyPermissions.PermissionCallbacks {
@@ -28,6 +36,64 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
     @Override
     protected void initData() {
         requestPermission();
+        registerEvents();
+    }
+
+    private void registerEvents() {
+        compositeDisposable.add(RxBus1.get().toFlowable(SimpleEvent.class).subscribe(new Consumer<SimpleEvent>() {
+            @Override
+            public void accept(SimpleEvent simpleEvent) throws Exception {
+                ToastUtil.toast("accept: SimpleEvent:" + simpleEvent.getMessage());
+                Log.e(TAG, "accept: SimpleEvent:" + simpleEvent.getMessage());
+                /**
+                 * 如果在处理事件的时候出现了异常，会导致后续事件收不到，我们可以自己把异常抓住
+                 */
+                try {
+                    String s = null;
+                    s.substring(0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                Log.e(TAG, "registerEvents: error:" + throwable.getMessage());
+            }
+        }));
+
+        compositeDisposable.add(RxBus2.get().register(ExceptionEvent.class,
+                new Consumer<ExceptionEvent>() {
+                    @Override
+                    public void accept(ExceptionEvent event) throws Exception {
+                        ToastUtil.toast("accept: ExceptionEvent:" + event.getMessage());
+                        Log.e(TAG, "accept: ExceptionEvent:" + event.getMessage());
+                        String s = null;
+                        s.substring(0);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG, "ExceptionEvent: error:" + throwable.getMessage());
+                    }
+                }));
+
+        //先post一个StickEvent 再订阅
+        RxBus3.get().postSticky(new StickEvent("stick event"));
+
+        compositeDisposable.add(RxBus3.get().registerSticky(StickEvent.class,
+                new Consumer<StickEvent>() {
+                    @Override
+                    public void accept(StickEvent event) throws Exception {
+                        ToastUtil.toast("accept: StickEvent:" + event.getMessage());
+                        Log.e(TAG, "accept: StickEvent:" + event.getMessage());
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG, "StickEvent: error:" + throwable.getMessage());
+                    }
+                }));
     }
 
     private void requestPermission() {
@@ -42,6 +108,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btn_test_rxbus:
+                EventBusActivity.launch(this);
+                break;
             case R.id.btn_test_rxjava_operator:
                 RxJavaOperatorActivity.launch(this);
                 break;

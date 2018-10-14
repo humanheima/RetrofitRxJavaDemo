@@ -45,7 +45,8 @@
         <activity android:name=".ui.activity.OnlyRetrofitActivity" />
         <activity android:name=".ui.activity.RxJava2Activity" />
         <activity android:name=".ui.activity.OnlyOkHttpActivity" />
-        <activity android:name=".ui.activity.RxBindingActivity"></activity>
+        <activity android:name=".ui.activity.RxBindingActivity" />
+        <activity android:name=".ui.activity.EventBusActivity"></activity>
     </application>
 
 </manifest>

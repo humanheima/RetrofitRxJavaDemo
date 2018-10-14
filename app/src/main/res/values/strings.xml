@@ -5,6 +5,7 @@
     <string name="rationale">下载文件，需要使用读写权限</string>
     <string name="rx_java_operator">RxJava操作符</string>
     <string name="test_rxjava_operator">测试RxJava操作符</string>
+    <string name="test_rxbus">测试RxBus</string>
     <string name="test_rxbinding">测试RxBinding</string>
     <string name="create">create</string>
     <string name="amb">amb</string>
@@ -67,4 +68,7 @@
     <string name="prevent_repeat_click_event">prevent repeat click event</string>
     <string name="get_validation_code">获取验证码</string>
     <string name="login">login</string>
+    <string name="post_simple_event">post SimpleEvent</string>
+    <string name="relay">relay</string>
+    <string name="stick_event">stick event</string>
 </resources>
