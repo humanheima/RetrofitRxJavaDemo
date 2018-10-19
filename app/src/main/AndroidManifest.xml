@@ -46,7 +46,8 @@
         <activity android:name=".ui.activity.RxJava2Activity" />
         <activity android:name=".ui.activity.OnlyOkHttpActivity" />
         <activity android:name=".ui.activity.RxBindingActivity" />
-        <activity android:name=".ui.activity.EventBusActivity"></activity>
+        <activity android:name=".ui.activity.EventBusActivity" />
+        <activity android:name=".ui.activity.RxJavaSourceCodeActivity"></activity>
     </application>
 
 </manifest>

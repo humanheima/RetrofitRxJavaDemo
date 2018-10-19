@@ -90,6 +90,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
     private int num = 1;
     private String[] mails = new String[]{"Here is an email!", "Another email!", "Yet another email!"};
 
+
     public static void launch(Context context) {
         Intent intent = new Intent(context, RxJavaOperatorActivity.class);
         context.startActivity(intent);
