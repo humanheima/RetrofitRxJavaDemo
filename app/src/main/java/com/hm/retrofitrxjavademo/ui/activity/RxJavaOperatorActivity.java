@@ -32,6 +32,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -2004,22 +2005,24 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
          01-10 12:22:36.634 22138-22281/com.hm.retrofitrxjavademo E/RxJavaOperatorActivity: Next: 60
          01-10 12:22:36.635 22138-22281/com.hm.retrofitrxjavademo E/RxJavaOperatorActivity: Sequence complete.
          */
-        Observable<Integer> observable1 = Observable.just(1, 2, 3);
-        Observable<Integer> observable2 = Observable.create(new ObservableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+        Observable<Long> observable1 = Observable
+                .interval(0, 1000, TimeUnit.MILLISECONDS).take(2)
+                .subscribeOn(Schedulers.io());
 
-            }
-        });
-        Observable.combineLatest(observable1, observable2, new BiFunction<Integer, Integer, String>() {
+        Observable<Long> observable2 = Observable
+                .interval(500, 1200, TimeUnit.MILLISECONDS).take(2)
+                .subscribeOn(Schedulers.io());
+
+        Observable.combineLatest(observable1, observable2, new BiFunction<Long, Long, Long>() {
             @Override
-            public String apply(Integer integer, Integer integer2) throws Exception {
-                return integer + "," + integer;
+            public Long apply(Long integer, Long integer2) throws Exception {
+                Log.d(TAG, "apply: "+integer+","+integer2);
+                return integer + integer2;
             }
-        }).subscribe(new Consumer<String>() {
+        }).subscribe(new Consumer<Long>() {
             @Override
-            public void accept(String s) throws Exception {
-                Log.e(TAG, "combineLatest accept: ");
+            public void accept(Long s) throws Exception {
+                Log.e(TAG, "combineLatest accept: " + s);
             }
         });
     }
