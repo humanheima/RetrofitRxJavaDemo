@@ -2,10 +2,9 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.Tag;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.hm.retrofitrxjavademo.R;

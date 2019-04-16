@@ -14,7 +14,8 @@ import com.hm.retrofitrxjavademo.databinding.ActivityRetrofitRxJavaBinding;
 import com.hm.retrofitrxjavademo.download.DownloadCallback;
 import com.hm.retrofitrxjavademo.download.DownloadUtil;
 import com.hm.retrofitrxjavademo.model.HistoryWeatherBean;
-import com.hm.retrofitrxjavademo.model.NowWeatherBean;
+import com.hm.retrofitrxjavademo.model.NowWeather;
+import com.hm.retrofitrxjavademo.model.NowWeatherPM25;
 import com.hm.retrofitrxjavademo.model.PM25;
 import com.hm.retrofitrxjavademo.network.NetWork;
 import com.hm.retrofitrxjavademo.network.api_entity.HistoryWeatherEntity;
@@ -29,8 +30,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function3;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
@@ -105,15 +113,15 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
     public void getNowWeather(View view) {
         //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
         showLoading();
-        DisposableObserver<NowWeatherBean> observer = newObserver(new Consumer<NowWeatherBean>() {
+        DisposableObserver<NowWeather> observer = newObserver(new Consumer<NowWeather>() {
 
             @Override
-            public void accept(NowWeatherBean bean) {
-                viewBind.textWeatherResult.setText(bean.toString());
+            public void accept(NowWeather bean) {
+                viewBind.textWeatherResult.setText(bean.getCitynm());
             }
         });
         NetWork.getData(new NowWeatherEntity("weather.today", 1,
-                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), NowWeatherBean.class)
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), NowWeather.class)
                 .subscribe(observer);
         compositeDisposable.add(observer);
     }
@@ -237,6 +245,91 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(s -> Log.e(TAG, s),
                         e -> Log.e(TAG, e.getMessage()));
+    }
+
+
+    private static final String BASE_URL = "http://api.k780.com";
+
+
+    /**
+     * 测试合并多个网络请求
+     *
+     * @param view
+     */
+
+    public void testZipMultiNetworkResponse(View view) {
+
+        Observable observable = Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                emitter.onError(new NullPointerException("Throw NullPointerException"));
+            }
+        });
+        //"http://api.k780.com:88/?app=weather.history&weaid=1&date=2015-07-20&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json";
+        Observable<NowWeather> observable1 = NetWork.getData(new NowWeatherEntity("weather.today", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), NowWeather.class);
+        //http://api.k780.com:88/?app=weather.pm25&weaid=1&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
+        Observable<PM25> observable2 = NetWork.getData(new PM25Entity("weather.pm25", 1,
+                "10003", "b59bc3ef6191eb9f747dd4e83c99f2a4", "json"), PM25.class);
+
+        /*Observable.zip(observable1, observable2,
+                new BiFunction<NowWeather, PM25, NowWeatherPM25>() {
+                    @Override
+                    public NowWeatherPM25 apply(NowWeather nowWeather, PM25 pm25) throws Exception {
+                        return new NowWeatherPM25(nowWeather, pm25);
+                    }
+                }).subscribe(new Observer<NowWeatherPM25>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(NowWeatherPM25 nowWeatherPM25) {
+                Log.d(TAG, "onNext: " + nowWeatherPM25.getNowWeather().getCitynm());
+                Log.d(TAG, "onNext: " + nowWeatherPM25.getPm25().getAqi());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: " + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });*/
+
+        Observable.zip(observable, observable1, observable2,
+                new Function3<Integer, NowWeather, PM25, NowWeatherPM25>() {
+                    @Override
+                    public NowWeatherPM25 apply(Integer integer, NowWeather nowWeather, PM25 pm25) throws Exception {
+                        return new NowWeatherPM25(nowWeather, pm25);
+                    }
+                }).subscribe(new Observer<NowWeatherPM25>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, "onSubscribe: ");
+            }
+
+            @Override
+            public void onNext(NowWeatherPM25 nowWeatherPM25) {
+                Log.d(TAG, "onNext: " + nowWeatherPM25.getNowWeather().getCitynm());
+                Log.d(TAG, "onNext: " + nowWeatherPM25.getPm25().getAqi());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: " + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ");
+            }
+        });
+
     }
 
 }
