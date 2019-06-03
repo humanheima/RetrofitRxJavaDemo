@@ -32,7 +32,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.Observer;
-import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -857,15 +856,44 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
     /**
      * interval操作符是每隔一段时间就产生一个数字，这些数字从0开始，递增直至无穷大
      */
+
+    private Disposable intervalDisposable;
+
     public void interval() {
-        Observable.interval(2, 2, TimeUnit.SECONDS, Schedulers.io())
+        Observable.interval(2, TimeUnit.SECONDS, Schedulers.io())
                 .take(5)//最多输出5个
-                .subscribe(new Consumer<Long>() {
+                .flatMap(new Function<Long, ObservableSource<String>>() {
                     @Override
-                    public void accept(Long aLong) throws Exception {
-                        Log.e(TAG, "interval:" + aLong);
+                    public ObservableSource<String> apply(Long aLong) throws Exception {
+                        Log.d(TAG, "apply: " + aLong);
+                        return Observable.just("interval" + aLong);
                     }
-                });
+                }).subscribe(new Observer<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                intervalDisposable = d;
+            }
+
+            @Override
+            public void onNext(String s) {
+                Log.d(TAG, "onNext: " + s);
+                if (s.equals("interval3")) {
+                    //intervalDisposable.dispose();
+                }
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ");
+            }
+        });
+
     }
 
     /**
@@ -2016,7 +2044,7 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
         Observable.combineLatest(observable1, observable2, new BiFunction<Long, Long, Long>() {
             @Override
             public Long apply(Long integer, Long integer2) throws Exception {
-                Log.d(TAG, "apply: "+integer+","+integer2);
+                Log.d(TAG, "apply: " + integer + "," + integer2);
                 return integer + integer2;
             }
         }).subscribe(new Consumer<Long>() {

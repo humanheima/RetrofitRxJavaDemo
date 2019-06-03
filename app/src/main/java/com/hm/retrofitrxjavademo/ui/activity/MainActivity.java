@@ -130,7 +130,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
                 OnlyRetrofitActivity.launch(this);
                 break;
             case R.id.btn_source_code:
-                RxJavaSourceCodeActivity.launch(this);
+                RxJava2Activity.launch(this);
                 break;
             default:
                 break;

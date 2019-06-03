@@ -489,13 +489,15 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
                 return throwableObservable.zipWith(Observable.range(1, rangeCount), new BiFunction<Throwable, Integer, Boolean>() {
                     @Override
                     public Boolean apply(Throwable throwable, Integer integer) throws Exception {
-                        boolean b = throwable instanceof RuntimeException;
-                        Log.d(TAG, "apply: throwable:" + throwable.getMessage() + ",:" + b);
-                        return b;
+                        return integer < rangeCount;
+                        // boolean b = throwable instanceof RuntimeException;
+                        // Log.d(TAG, "apply: throwable:" + throwable.getMessage() + ",:" + b);
+                        //return b;
                     }
                 }).flatMap(new Function<Boolean, ObservableSource<?>>() {
                     @Override
                     public ObservableSource<?> apply(Boolean aBoolean) throws Exception {
+                        Log.d(TAG, "apply: retry");
                         //如果这个Observable发射了一项数据，它就重新订阅，如果这个Observable发射的
                         // 是onError通知，它就将这个通知传递给观察者然后终止。
                         if (aBoolean) {
