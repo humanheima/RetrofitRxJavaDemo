@@ -699,10 +699,25 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
                 }
                 return Observable.fromIterable(list).delay(10, TimeUnit.MILLISECONDS);
             }
-        }).subscribe(new Consumer<String>() {
+        }).subscribe(new Observer<String>() {
             @Override
-            public void accept(String s) throws Exception {
-                Log.e(TAG, s);
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(String s) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
     }
