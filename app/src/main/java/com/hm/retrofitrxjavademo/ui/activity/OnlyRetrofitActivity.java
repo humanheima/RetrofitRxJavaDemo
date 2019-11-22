@@ -5,31 +5,21 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 
-import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.API;
-import com.hm.retrofitrxjavademo.network.HttpResult;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
  * 单独使用 Retrofit
@@ -81,7 +71,7 @@ public class OnlyRetrofitActivity extends BaseActivity {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor()).build())
+                .client(new OkHttpClient.Builder().build())
                 //.addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
