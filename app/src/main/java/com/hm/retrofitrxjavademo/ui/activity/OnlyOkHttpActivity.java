@@ -38,7 +38,7 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
 
     }
 
-    String run(String url) throws IOException {
+    public String run(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
                 .build();

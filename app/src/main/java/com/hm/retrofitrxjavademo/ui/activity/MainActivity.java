@@ -1,11 +1,13 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityMainBinding;
@@ -39,6 +41,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
         registerEvents();
     }
 
+    @SuppressLint("AutoDispose")
     private void registerEvents() {
         compositeDisposable.add(RxBus1.get().toFlowable(SimpleEvent.class).subscribe(new Consumer<SimpleEvent>() {
             @Override
@@ -131,6 +134,12 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
                 break;
             case R.id.btn_source_code:
                 RxJavaSourceCodeActivity.launch(this);
+                break;
+            case R.id.btn_rxjava2:
+                RxJava2Activity.launch(this);
+                break;
+            case R.id.btn_auto_dispose:
+                AutoDisposeActivity.launch(this);
                 break;
             default:
                 break;

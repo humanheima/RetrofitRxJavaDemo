@@ -6,9 +6,13 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 
+import androidx.lifecycle.LifecycleOwner;
+
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityRxJava2Binding;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
+import com.uber.autodispose.AutoDispose;
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -45,6 +49,7 @@ import io.reactivex.functions.BooleanSupplier;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.AsyncSubject;
 import io.reactivex.subjects.BehaviorSubject;
@@ -54,7 +59,7 @@ import io.reactivex.subjects.ReplaySubject;
 /**
  * 参考链接： https://www.jianshu.com/p/464fa025229e
  */
-@SuppressLint("CheckResult")
+@SuppressLint({"CheckResult", "AutoDispose"})
 public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
     private static final String TAG = "RxJava2Activity";
@@ -308,6 +313,36 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
                 });
     }
 
+    public void testCompletable(View view) {
+        Disposable d = Completable.complete()
+                .delay(2, TimeUnit.SECONDS)
+                .subscribeWith(new DisposableCompletableObserver() {
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "onComplete: ");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "onError: ");
+                    }
+                });
+        //d.dispose();
+
+        Completable.create(new CompletableOnSubscribe() {
+            @Override
+            public void subscribe(CompletableEmitter emitter) throws Exception {
+                TimeUnit.SECONDS.sleep(1);
+                emitter.onComplete();
+            }
+        }).andThen(Observable.range(1, 10))
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        Log.d(TAG, "accept: " + integer);
+                    }
+                });
+    }
 
     /**
      * Maybe只能发射0或者1个数据
@@ -339,23 +374,6 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
 
             }
         });
-    }
-
-
-    public void testCompletable(View view) {
-        Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) throws Exception {
-                TimeUnit.SECONDS.sleep(1);
-                emitter.onComplete();
-            }
-        }).andThen(Observable.range(1, 10))
-                .subscribe(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer integer) throws Exception {
-                        Log.d(TAG, "accept: " + integer);
-                    }
-                });
     }
 
     private void testSingle() {
@@ -671,8 +689,10 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
             public String apply(Integer integer) throws Exception {
                 return "string:" + integer;
             }
-        }).subscribeOn(Schedulers.io())
+        })
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from((LifecycleOwner) RxJava2Activity.this)))
                 .subscribe(new Consumer<String>() {
                     @Override
                     public void accept(String s) throws Exception {

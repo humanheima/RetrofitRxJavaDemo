@@ -43,6 +43,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observables.GroupedObservable;
+import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -53,8 +54,7 @@ import static io.reactivex.Observable.just;
  */
 
 @SuppressWarnings("unchecked")
-@SuppressLint("CheckResult")
-
+@SuppressLint({"CheckResult", "AutoDispose"})
 public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorBinding> {
 
     public final static String TAG = "RxJavaOperatorActivity";
@@ -282,6 +282,9 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
                 break;
             case R.id.btn_throttle_with_timeout:
                 throttleWithTimeOut();
+                break;
+            case R.id.btn_single:
+                single();
                 break;
             default:
                 break;
@@ -1894,20 +1897,21 @@ public class RxJavaOperatorActivity extends BaseActivity<ActivityRxJavaOperatorB
 
     public void single() {
         Single.just(1)
-                .subscribe(new SingleObserver<Integer>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+                .subscribeWith(new DisposableSingleObserver<Integer>() {
 
+                    @Override
+                    protected void onStart() {
+                        Log.d(TAG, "onStart: ");
                     }
 
                     @Override
                     public void onSuccess(Integer integer) {
-
+                        Log.d(TAG, "onSuccess: " + integer);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d(TAG, "onError: " + e.getMessage());
                     }
                 });
     }

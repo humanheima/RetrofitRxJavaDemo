@@ -1,13 +1,15 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.hm.retrofitrxjavademo.R;
 
@@ -23,11 +25,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
+@SuppressLint("AutoDispose")
+
 public class RxJavaSourceCodeActivity extends AppCompatActivity {
 
     private static final String TAG = "RxJavaSourceCodeActivit";
-
-    private Button btnFlatMap;
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, RxJavaSourceCodeActivity.class);
@@ -39,16 +41,14 @@ public class RxJavaSourceCodeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rx_java_source_code);
 
-        btnFlatMap = findViewById(R.id.btnFlatMap);
-        btnFlatMap.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnFlatMap).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 testFlatMap();
             }
         });
+
         test();
-
-
     }
 
 

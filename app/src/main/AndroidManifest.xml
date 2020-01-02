@@ -14,6 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.activity.AutoDisposeActivity"></activity>
         <activity
             android:name=".ui.activity.MainActivity"
             android:screenOrientation="portrait">
@@ -33,7 +34,7 @@
         <activity android:name=".ui.activity.DownloadManagerActivity" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="com.hm.retrofitrxjavademo.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -47,7 +48,7 @@
         <activity android:name=".ui.activity.OnlyOkHttpActivity" />
         <activity android:name=".ui.activity.RxBindingActivity" />
         <activity android:name=".ui.activity.EventBusActivity" />
-        <activity android:name=".ui.activity.RxJavaSourceCodeActivity"></activity>
+        <activity android:name=".ui.activity.RxJavaSourceCodeActivity" />
     </application>
 
 </manifest>

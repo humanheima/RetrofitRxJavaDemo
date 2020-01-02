@@ -1,5 +1,6 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -24,6 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /**
  * 单独使用 Retrofit
  */
+@SuppressLint("AutoDispose")
 public class OnlyRetrofitActivity extends BaseActivity {
 
     private static final String TAG = "OnlyRetrofitActivity";
@@ -107,8 +109,6 @@ public class OnlyRetrofitActivity extends BaseActivity {
                     }
                 });
 
-
     }
-
 
 }

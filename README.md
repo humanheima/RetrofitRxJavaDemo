@@ -321,4 +321,9 @@ Observable<HttpResult<Object>> getData(@Url String url, @QueryMap Map<String, Ob
 在Android平台下，Retrofit内置的CallAdapter的作用只是为了把请不请求的回调切换到主线程。线程切换内部还是使用的Handler
 
 
+### RxJava Schedulers
+
+特别需要的是 ComputationScheduler 和 IoScheduler 都是依赖线程池来维护线程的，区别就是 IoScheduler 线程池中的个数是无限的，由 prefix 和 incrementAndGet() 产生的递增值来决定线程的名字；而 ComputationScheduler 中则是一个固定线程数量的线程池，数据为CPU的数目，并且不要把 I/O 操作放在 computation() 中，否则 I/O 操作的等待时间会浪费 CPU。
+
+[RxJava 线程模型分析](https://www.jianshu.com/p/c1cab5621df7)
  
