@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +20,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -94,52 +94,66 @@ public class RxJavaSourceCodeActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * 这个例子要分析一下子
+     */
     private void testFlatMap() {
         Observable.create(new ObservableOnSubscribe<List<Integer>>() {
-            @Override
-            public void subscribe(ObservableEmitter<List<Integer>> emitter) throws Exception {
-                List<Integer> list1 = new ArrayList<>();
-                list1.add(1);
-                list1.add(2);
-                list1.add(3);
-                List<Integer> list2 = new ArrayList<>();
-                list2.add(4);
-                list2.add(5);
-                list2.add(6);
+                              @Override
+                              public void subscribe(ObservableEmitter<List<Integer>> emitter) throws Exception {
 
-                emitter.onNext(list1);
-                emitter.onNext(list2);
+                                  //在io线程
+                                  Log.d(TAG, "subscribe: " + Thread.currentThread().getName());
+                                  List<Integer> list1 = new ArrayList<>();
+                                  list1.add(1);
+                                  list1.add(2);
+                                  list1.add(3);
+                                  List<Integer> list2 = new ArrayList<>();
+                                  list2.add(4);
+                                  list2.add(5);
+                                  list2.add(6);
 
-                emitter.onComplete();
+                                  emitter.onNext(list1);
+                                  emitter.onNext(list2);
 
-            }
-        }).flatMap(new Function<List<Integer>, ObservableSource<Integer>>() {
-            @Override
-            public ObservableSource<Integer> apply(List<Integer> integers) throws Exception {
-                //注释1处，返回的是一个ObservableFromIterable对象
-                return Observable.fromIterable(integers);
-            }
-        }).subscribe(new Observer<Integer>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                Log.e(TAG, "onSubscribe: ");
-            }
+                                  emitter.onComplete();
 
-            @Override
-            public void onNext(Integer integer) {
-                Log.e(TAG, "onNext: " + integer);
-            }
+                              }
+                          }
+        ).observeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Function<List<Integer>, ObservableSource<Integer>>() {
+                    @Override
+                    public ObservableSource<Integer> apply(List<Integer> integers) throws Exception {
+                        //在主线程
+                        Log.d(TAG, "subscribe: flatMap " + Thread.currentThread().getName());
 
-            @Override
-            public void onError(Throwable e) {
-                Log.e(TAG, "onError: " + e.getMessage());
-            }
+                        //注释1处，返回的是一个ObservableFromIterable对象
+                        return Observable.fromIterable(integers);
+                    }
+                }).subscribeOn(Schedulers.io())
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        //在主线程
+                        Log.e(TAG, "onSubscribe: ");
+                    }
 
-            @Override
-            public void onComplete() {
-                Log.e(TAG, "onComplete: ");
-            }
-        });
+                    @Override
+                    public void onNext(Integer integer) {
+                        //在主线程
+                        Log.d(TAG, "subscribe: onNext " + Thread.currentThread().getName() + integer);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "onComplete: ");
+                    }
+                });
     }
 
 }

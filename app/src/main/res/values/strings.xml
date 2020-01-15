@@ -39,6 +39,7 @@
     <string name="skip_last">skip_last</string>
     <string name="combinelatest">combineLatest</string>
     <string name="zip">zip</string>
+    <string name="zip_delay_error">zip delay error</string>
     <string name="use_catch">use_catch</string>
     <string name="retry">retry</string>
     <string name="delay">delay</string>

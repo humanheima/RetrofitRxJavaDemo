@@ -273,6 +273,14 @@
                 android:textAllCaps="false" />
 
             <Button
+                android:id="@+id/btn_zip_delay_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="click"
+                android:text="@string/zip_delay_error"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btn_use_catch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

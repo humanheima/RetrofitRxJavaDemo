@@ -42,7 +42,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="onClick"
-                android:text="@string/test_rxjava_operator" />
+                android:text="@string/test_rxjava_operator"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_retrofit_rxjava"
