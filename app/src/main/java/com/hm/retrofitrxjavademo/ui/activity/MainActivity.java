@@ -111,6 +111,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnOnlyHttp:
+                OnlyOkHttpActivity.launch(this);
+                break;
             case R.id.btn_test_rxbus:
                 EventBusActivity.launch(this);
                 break;

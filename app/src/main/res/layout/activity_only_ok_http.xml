@@ -3,12 +3,27 @@
 
     <data></data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".ui.activity.OnlyOkHttpActivity">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/btnAppInterceptor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="应用拦截器"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btnNetInterceptor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="网络拦截器"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
 </layout>

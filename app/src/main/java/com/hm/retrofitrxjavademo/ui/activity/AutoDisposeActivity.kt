@@ -16,6 +16,11 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
+/**
+ * Crete by dumingwei on 2020-03-17
+ * Desc:
+ *
+ */
 class AutoDisposeActivity : AppCompatActivity() {
 
 

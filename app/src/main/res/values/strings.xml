@@ -6,6 +6,7 @@
     <string name="rx_java_operator">RxJava操作符</string>
     <string name="test_rxjava_operator">测试RxJava操作符</string>
     <string name="test_rxbus">测试RxBus</string>
+    <string name="test_okhttp">测试只使用OkHttp</string>
     <string name="test_rxbinding">测试RxBinding</string>
     <string name="create">create</string>
     <string name="amb">amb</string>

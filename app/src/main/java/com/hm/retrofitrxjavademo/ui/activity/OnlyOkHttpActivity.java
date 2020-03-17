@@ -1,11 +1,18 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+import android.view.View;
+
+import com.hm.retrofitrxjavademo.LoggingInterceptor;
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityOnlyOkHttpBinding;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -22,11 +29,21 @@ import okhttp3.ResponseBody;
 /**
  * Created by dmw on 2018/8/31.
  * Desc:
+ * todo 测试一下拦截器
  */
 public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> {
 
-    OkHttpClient client = new OkHttpClient();
+    OkHttpClient client = new OkHttpClient.Builder()
+            //.addInterceptor(new LoggingInterceptor())
+            .addNetworkInterceptor(new LoggingInterceptor())
+            .readTimeout(5000, TimeUnit.MILLISECONDS)
+            .writeTimeout(10000, TimeUnit.MILLISECONDS)
+            .build();
 
+    public static void launch(Context context) {
+        Intent intent = new Intent(context, OnlyOkHttpActivity.class);
+        context.startActivity(intent);
+    }
 
     @Override
     protected int bindLayout() {
@@ -35,7 +52,45 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
 
     @Override
     protected void initData() {
+        viewBind.btnAppInterceptor.setOnClickListener(v -> {
 
+                    Request request = new Request.Builder()
+                            .url("http://www.publicobject.com/helloworld.txt")
+                            .header("User-Agent", "OkHttp Example")
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            Log.d(TAG, "onResponse: " + response.message());
+                        }
+                    });
+                }
+        );
+
+        viewBind.btnNetInterceptor.setOnClickListener(v -> {
+            Request request = new Request.Builder()
+                    .url("http://www.publicobject.com/helloworld.txt")
+                    .header("User-Agent", "OkHttp Example")
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    Log.d(TAG, "onResponse: " + response.message());
+                }
+            });
+        });
     }
 
     public String run(String url) throws IOException {
