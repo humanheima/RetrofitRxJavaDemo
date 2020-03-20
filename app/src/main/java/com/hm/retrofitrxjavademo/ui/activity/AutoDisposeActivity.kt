@@ -40,11 +40,12 @@ class AutoDisposeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_auto_dispose)
     }
 
+
     fun onClick(view: View) {
         Observable.interval(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this@AutoDisposeActivity)))
+                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)))
                 .subscribe(object : Observer<Long> {
                     override fun onComplete() {
                         Log.d(TAG, "onComplete: ")
@@ -61,8 +62,9 @@ class AutoDisposeActivity : AppCompatActivity() {
                     override fun onError(e: Throwable) {
                         Log.d(TAG, "onError: ${e.message}")
                     }
-
                 })
 
     }
+
+
 }
