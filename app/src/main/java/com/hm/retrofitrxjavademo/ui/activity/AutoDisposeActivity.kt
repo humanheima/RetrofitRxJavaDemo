@@ -11,10 +11,10 @@ import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import io.reactivex.Observable
 import io.reactivex.Observer
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 /**
  * Crete by dumingwei on 2020-03-17
@@ -42,27 +42,30 @@ class AutoDisposeActivity : AppCompatActivity() {
 
 
     fun onClick(view: View) {
-        Observable.interval(1, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)))
-                .subscribe(object : Observer<Long> {
-                    override fun onComplete() {
-                        Log.d(TAG, "onComplete: ")
-                    }
+       thread {
+           Observable.interval(1, TimeUnit.SECONDS)
+                   .subscribeOn(Schedulers.io())
+                   //.observeOn(AndroidSchedulers.mainThread())
+                   .observeOn(Schedulers.io())
+                   .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)))
+                   .subscribe(object : Observer<Long> {
+                       override fun onComplete() {
+                           Log.d(TAG, "onComplete: ")
+                       }
 
-                    override fun onSubscribe(d: Disposable) {
-                        Log.d(TAG, "onSubscribe: ")
-                    }
+                       override fun onSubscribe(d: Disposable) {
+                           Log.d(TAG, "onSubscribe: ")
+                       }
 
-                    override fun onNext(t: Long) {
-                        Log.d(TAG, "onNext: $t")
-                    }
+                       override fun onNext(t: Long) {
+                           Log.d(TAG, "onNext: $t")
+                       }
 
-                    override fun onError(e: Throwable) {
-                        Log.d(TAG, "onError: ${e.message}")
-                    }
-                })
+                       override fun onError(e: Throwable) {
+                           Log.d(TAG, "onError: ${e.message}")
+                       }
+                   })
+       }
 
     }
 

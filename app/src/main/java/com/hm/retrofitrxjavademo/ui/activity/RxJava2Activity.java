@@ -50,6 +50,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.AsyncSubject;
 import io.reactivex.subjects.BehaviorSubject;
@@ -138,7 +139,73 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
     }
 
     public void testBehaviorSubject(View view) {
-        BehaviorSubject<String> subject = BehaviorSubject.createDefault("subject1");
+
+        BehaviorSubject<Integer> subject = BehaviorSubject.create();
+
+        final Integer EMPTY = Integer.MIN_VALUE;
+
+        Observable<Integer> observable = subject.filter(v -> v.equals(EMPTY));
+
+
+        Observer<Integer> observer1 = new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "observer1 onNext: " + integer);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "observer1 onComplete: ");
+            }
+        };
+        observable.subscribe(observer1);
+
+        subject.onNext(1);
+        //会清除缓存的值
+        subject.onNext(EMPTY);
+
+
+        Observer<Integer> observer2 = new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "observer2 onNext: " + integer);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "observer2 onComplete: ");
+            }
+        };
+
+        observable.subscribe(observer2);
+
+        subject.onNext(2);
+        //会清除缓存的值
+        subject.onComplete();
+
+
+
+        /*BehaviorSubject<String> subject = BehaviorSubject.createDefault("subject1");
         subject.onNext("subject2");
 
         subject.subscribe(new Consumer<String>() {
@@ -159,7 +226,7 @@ public class RxJava2Activity extends BaseActivity<ActivityRxJava2Binding> {
             }
         });
         subject.onNext("subject3");
-        subject.onNext("subject4");
+        subject.onNext("subject4");*/
     }
 
     public void testAsyncSubject(View view) {
