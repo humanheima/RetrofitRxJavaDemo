@@ -1,4 +1,4 @@
-package com.hm.retrofitrxjavademo
+package com.hm.retrofitrxjavademo.intercepter
 
 import android.util.Log
 import okhttp3.Interceptor

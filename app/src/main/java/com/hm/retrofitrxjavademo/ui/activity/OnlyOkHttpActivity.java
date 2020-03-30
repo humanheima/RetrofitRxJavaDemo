@@ -3,11 +3,11 @@ package com.hm.retrofitrxjavademo.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.view.View;
 
-import com.hm.retrofitrxjavademo.LoggingInterceptor;
+import com.hm.retrofitrxjavademo.BuildConfig;
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityOnlyOkHttpBinding;
+import com.hm.retrofitrxjavademo.intercepter.HttpLoggingInterceptor;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
 
 import java.io.File;
@@ -33,12 +33,10 @@ import okhttp3.ResponseBody;
  */
 public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> {
 
-    OkHttpClient client = new OkHttpClient.Builder()
-            //.addInterceptor(new LoggingInterceptor())
-            .addNetworkInterceptor(new LoggingInterceptor())
-            .readTimeout(5000, TimeUnit.MILLISECONDS)
-            .writeTimeout(10000, TimeUnit.MILLISECONDS)
-            .build();
+    private OkHttpClient client;
+
+    private HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+    private OkHttpClient.Builder builder;
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, OnlyOkHttpActivity.class);
@@ -52,6 +50,22 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
 
     @Override
     protected void initData() {
+
+        builder = new OkHttpClient.Builder()
+                //.addInterceptor(new LoggingInterceptor())
+                //.addNetworkInterceptor(new LoggingInterceptor())
+                //.addInterceptor(interceptor)
+                .readTimeout(5000, TimeUnit.MILLISECONDS)
+                .writeTimeout(10000, TimeUnit.MILLISECONDS);
+
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "instance initializer: ");
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            builder.addInterceptor(interceptor);
+        }
+        client = builder
+                .build();
+
         viewBind.btnAppInterceptor.setOnClickListener(v -> {
 
                     Request request = new Request.Builder()
