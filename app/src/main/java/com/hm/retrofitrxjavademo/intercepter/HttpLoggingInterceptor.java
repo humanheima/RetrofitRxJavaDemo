@@ -194,7 +194,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
 
                 logger.log("");
                 if (isPlaintext(buffer)) {
-                    logger.log(buffer.readString(charset));
+                    logger.log("request body " + buffer.readString(charset));
                     logger.log("--> END " + request.method()
                             + " (" + requestBody.contentLength() + "-byte body)");
                 } else {

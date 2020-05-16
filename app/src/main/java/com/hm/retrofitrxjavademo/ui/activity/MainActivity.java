@@ -19,19 +19,10 @@ import com.hm.retrofitrxjavademo.util.RxBus1;
 import com.hm.retrofitrxjavademo.util.RxBus2;
 import com.hm.retrofitrxjavademo.util.RxBus3;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
-import com.uber.autodispose.AutoDispose;
-import com.uber.autodispose.AutoDisposeConverter;
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> implements EasyPermissions.PermissionCallbacks {
@@ -49,33 +40,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
     protected void initData() {
         requestPermission();
         registerEvents();
-
-        Observable.interval(1, TimeUnit.SECONDS)
-                .take(10)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                //.as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)))
-                .subscribe(new Observer<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        Log.d(TAG, "onSubscribe: ");
-                    }
-
-                    @Override
-                    public void onNext(Long aLong) {
-                        Log.d(TAG, "onNext: " + aLong);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "onError: " + e.getMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        Log.d(TAG, "onComplete: ");
-                    }
-                });
     }
 
     @SuppressLint("AutoDispose")
@@ -214,8 +178,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
                     + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
         }
     }
-
-
 
 
 }

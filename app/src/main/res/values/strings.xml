@@ -75,4 +75,7 @@
     <string name="post_simple_event">post SimpleEvent</string>
     <string name="relay">relay</string>
     <string name="stick_event">stick event</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

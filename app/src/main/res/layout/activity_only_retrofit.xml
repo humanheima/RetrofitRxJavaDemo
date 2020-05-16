@@ -17,7 +17,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="simpleUse"
-            android:text="@string/simple_use_no_calladapter_factory_converter_factory" />
+            android:text="@string/simple_use_no_calladapter_factory_converter_factory"
+            android:textAllCaps="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textColor="#333333"
+            app:layout_constraintTop_toBottomOf="@+id/btn_simple_use" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.core.content.FileProvider;
+
 import android.util.Log;
 import android.view.View;
 
@@ -44,8 +46,10 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
-@SuppressLint("CheckResult")
-
+@SuppressLint(value = {
+        "CheckResult",
+        "AutoDispose"
+})
 public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaBinding> {
 
     private static final String TAG = "RetrofitRxJavaActivity";

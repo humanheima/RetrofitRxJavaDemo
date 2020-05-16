@@ -9,13 +9,11 @@ import com.google.gson.GsonBuilder;
 public class JsonUtil {
 
     private static JsonUtil jsonUtil;
-    private static Gson gson;
-    private static GsonBuilder gb;
+    private volatile static Gson gson;
 
     private JsonUtil() {
-        gb = new GsonBuilder();
-        gb.disableHtmlEscaping();
-        gson = gb.create();
+        gson = new Gson();
+        new GsonBuilder().serializeNulls().create();
     }
 
     public static JsonUtil getInstance() {

@@ -144,6 +144,7 @@ public class NetWork {
                     public T apply(Object o) {
                         String json = JsonUtil.getInstance().toJson(o);
                         return JsonUtil.getInstance().toObject(json, classType);
+                        //return ((T) o);
                     }
                 })
                 .onErrorResumeNext(new HttpResultFunc<>())
