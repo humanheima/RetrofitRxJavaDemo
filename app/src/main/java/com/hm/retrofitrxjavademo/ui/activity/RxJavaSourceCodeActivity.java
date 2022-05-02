@@ -70,7 +70,7 @@ public class RxJavaSourceCodeActivity extends AppCompatActivity {
             }
         })
                 .subscribeOn(Schedulers.io())
-                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Integer>() {
                     @Override
                     public void onSubscribe(Disposable d) {

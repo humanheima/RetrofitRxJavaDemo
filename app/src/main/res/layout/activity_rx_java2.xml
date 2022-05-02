@@ -80,6 +80,13 @@
             android:text="test"
             android:textAllCaps="false" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="testZip"
+            android:text="testZip"
+            android:textAllCaps="false" />
+
     </LinearLayout>
 </layout>
 

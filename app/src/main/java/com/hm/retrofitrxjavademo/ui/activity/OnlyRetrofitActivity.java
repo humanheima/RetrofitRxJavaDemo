@@ -61,7 +61,7 @@ public class OnlyRetrofitActivity extends BaseActivity<ActivityOnlyRetrofitBindi
                 .baseUrl("https://api.github.com/")
                 //.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(new OkHttpClient.Builder().addInterceptor(interceptor).build())
-                //.addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
         GitHubService service = retrofit.create(GitHubService.class);
 

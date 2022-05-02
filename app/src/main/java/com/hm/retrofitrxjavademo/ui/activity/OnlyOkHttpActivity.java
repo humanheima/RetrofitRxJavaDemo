@@ -2,7 +2,9 @@ package com.hm.retrofitrxjavademo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Looper;
 import android.util.Log;
+import android.util.Printer;
 
 import com.hm.retrofitrxjavademo.BuildConfig;
 import com.hm.retrofitrxjavademo.R;
@@ -50,6 +52,13 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
 
     @Override
     protected void initData() {
+
+        Looper.getMainLooper().setMessageLogging(new Printer() {
+            @Override
+            public void println(String x) {
+
+            }
+        });
 
         builder = new OkHttpClient.Builder()
                 //.addInterceptor(new LoggingInterceptor())
