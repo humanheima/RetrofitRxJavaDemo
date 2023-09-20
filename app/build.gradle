@@ -22,6 +22,25 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            //读取gradle.properties的属性
+            storeFile file(KEY_STORE_FILE)
+            storePassword KEY_STORE_PASSWORD
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+        debug {
+            storeFile file(KEY_STORE_FILE)
+            storePassword KEY_STORE_PASSWORD
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
+        }
+    }
+
+
     dataBinding {
         enabled true
     }
