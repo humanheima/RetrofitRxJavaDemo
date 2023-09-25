@@ -4,27 +4,35 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import androidx.core.content.FileProvider;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
-
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityOkHttp3DownloadBinding;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownLoadObserver;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownloadInfo;
 import com.hm.retrofitrxjavademo.okhttpdownload.DownloadManager;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
+import com.hm.retrofitrxjavademo.util.NetSpeedUtils;
+import com.hm.retrofitrxjavademo.util.NetSpeedUtils.NetSpeedCallback;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
-
 import java.io.File;
 
-
+/**
+ * Created by p_dmweidu on 2023/9/20
+ * Desc: 下载文件
+ */
 public class OkHttpDownloadActivity extends BaseActivity<ActivityOkHttp3DownloadBinding> {
 
-    private String wifiUrl = "http://imtt.dd.qq.com/16891/7595C75AAF71D6B65596B3A99956062C.apk?fsname=com.snda.wifilocating_4.2.53_3183.apk";
-    private String bookUrl = "http://imtt.dd.qq.com/16891/11963AA5E2A9C91F41D2F09C1FD3496C.apk?fsname=com.ss.android.article.news_6.5.7_657.apk";
-    private String weatherUrl = "http://imtt.dd.qq.com/16891/BCF8513AC8C0F123EEF46B91F46004CA.apk?fsname=com.baidu.news_7.0.3.0_7030.apk";
+
+    private TextView tv_speed = null;
+
+    private String wifiUrl = "https://downloadxx.yuewen.com/xiaoxiang/apknew/source/300000010.apk";
+    private String bookUrl = "https://downloadxx.yuewen.com/xiaoxiang/apknew/source/300000010.apk";
+    private String weatherUrl = "https://downloadxx.yuewen.com/xiaoxiang/apknew/source/300000010.apk";
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, OkHttpDownloadActivity.class);
@@ -38,17 +46,44 @@ public class OkHttpDownloadActivity extends BaseActivity<ActivityOkHttp3Download
 
     @Override
     protected void initData() {
+        tv_speed = findViewById(R.id.tv_speed);
+
+        NetSpeedUtils.INSTANCE.setNetSpeedCallback(new NetSpeedCallback() {
+            @Override
+            public void onNetSpeedChange(@NonNull String downloadSpeed, @NonNull String uploadSpeed) {
+                tv_speed.setText("下载速度：" + downloadSpeed + "，上传速度：" + uploadSpeed);
+            }
+        });
+
     }
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btn_start:
+                NetSpeedUtils.INSTANCE.startMeasuringNetSpeed(this);
+                break;
+
+            case R.id.btn_stop:
+                NetSpeedUtils.INSTANCE.stopMeasuringNetSpeed();
+                break;
+
             case R.id.main_btn_down1:
                 DownloadManager.getInstance().downLoad(wifiUrl, new DownLoadObserver() {
                     @Override
                     public void onNext(DownloadInfo value) {
                         super.onNext(value);
-                        viewBind.mainProgress1.setMax((int) value.getTotal());
-                        viewBind.mainProgress1.setProgress((int) value.getProgress());
+                        long total = value.getTotal();
+                        viewBind.mainProgress1.setMax((int) total);
+                        long progress = value.getProgress();
+                        viewBind.mainProgress1.setProgress((int) progress);
+
+                        long left = (total - progress) / 1024;
+                        long downloadSpeed = NetSpeedUtils.INSTANCE.getDownloadSpeed();
+                        if (downloadSpeed > 0) {
+                            long time = left / downloadSpeed;
+                            Log.d(TAG, "onNext:" + convertSecondsToHMS(time));
+                        }
+
                     }
 
                     @Override
@@ -155,6 +190,14 @@ public class OkHttpDownloadActivity extends BaseActivity<ActivityOkHttp3Download
             intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         }
         startActivity(intent);
+    }
+
+    private String convertSecondsToHMS(long seconds) {
+        int hours = (int) (seconds / 3600);
+        int minutes = (int) ((seconds % 3600) / 60);
+        int remainingSeconds = (int) (seconds % 60);
+
+        return String.format("剩余%02d小时%02d分钟%02d秒", hours, minutes, remainingSeconds);
     }
 
 }

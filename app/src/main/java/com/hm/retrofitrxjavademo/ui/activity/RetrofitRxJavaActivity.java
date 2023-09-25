@@ -54,7 +54,7 @@ public class RetrofitRxJavaActivity extends BaseActivity<ActivityRetrofitRxJavaB
 
     private static final String TAG = "RetrofitRxJavaActivity";
 
-    private String downLoadUrl = "http://imtt.dd.qq.com/16891/7595C75AAF71D6B65596B3A99956062C.apk?fsname=com.snda.wifilocating_4.2.53_3183.apk";
+    private String downLoadUrl = "https://downloadxx.yuewen.com/xiaoxiang/apknew/source/300000010.apk";
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, RetrofitRxJavaActivity.class);

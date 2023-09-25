@@ -74,6 +74,7 @@ dependencies {
     implementation 'com.uber.autodispose:autodispose:1.4.0'
     //implementation 'com.uber.autodispose:autodispose-android:1.4.0'
     implementation 'com.uber.autodispose:autodispose-android-archcomponents:1.4.0'
+    implementation 'com.google.android.material:material:1.4.0'
 }
 
 apply plugin: 'kotlin-android'

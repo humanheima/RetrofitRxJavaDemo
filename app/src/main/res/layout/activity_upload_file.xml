@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".ui.activity.UploadFileActivity">
+
+
+    <ProgressBar
+            android:layout_margin="16dp"
+            android:id="@+id/main_upload_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <Button
+            android:id="@+id/btn_upload_file"
+            android:layout_width="match_parent"
+            android:text="上传文件"
+            android:layout_height="wrap_content" />
+
+    <Button
+            android:id="@+id/btn_cancel_upload"
+            android:text="取消上传"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+</LinearLayout>

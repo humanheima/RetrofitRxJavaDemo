@@ -41,7 +41,7 @@ public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManage
     private static final String[] PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
     public static final int REQUEST_CODE = 14;
     //private String apkUrl = "http://140.207.247.205/imtt.dd.qq.com/16891/DF6B2FB4A4628C2870C710046C231348.apk?mkey=58d4b294acc7802a&f=8e5d&c=0&fsname=com.snda.wifilocating_4.1.88_3108.apk&csr=1bbd&p=.apk";
-    private String apkUrl = "http://p.gdown.baidu.com/eec51f59e7b34aae92c1e42e581c433b8a12e4c60386d66e38586bf760dc53b710d39f33cb476e248b2933c7b83b9f5afbaf71a8640b354dedb03e0035c42709e9c310f11f22164d1c5e2a3b86e41b5b886d8944b1913c5fe7889588f9e4d1a01e7adf108a23fbb247e63fc7845ae0adcc2322844d8f5b0834ceb9ff0a0b551c4ae0d4c361981e9337aa66d2414be0e0865aece920281684edd3a99195dfc6a01cef016a5343ace4d4daa98d98d3bd29d2ae878fba53b91c5c079ac3c82a2b59591703bf478ec3964b5526aedf6a4b601538926fee90cd0042aa974be383098ba185da56e72c3876aacccad035bb7709360433b7d27d7521417fa6e03333357cbbe6e7eb5befd5045220a14cdfeb973d6c30ce662d995b5da8243f2f9b232c7e";
+    private String apkUrl = "https://downloadxx.yuewen.com/xiaoxiang/apknew/source/300000010.apk";
     private long id;
     private DownloadManager downloadManager;
     private DownloadManager.Query query;

@@ -6,9 +6,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityMainBinding;
 import com.hm.retrofitrxjavademo.event.ExceptionEvent;
@@ -19,10 +17,8 @@ import com.hm.retrofitrxjavademo.util.RxBus1;
 import com.hm.retrofitrxjavademo.util.RxBus2;
 import com.hm.retrofitrxjavademo.util.RxBus3;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
-
-import java.util.List;
-
 import io.reactivex.functions.Consumer;
+import java.util.List;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> implements EasyPermissions.PermissionCallbacks {
@@ -106,12 +102,16 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
             Toast.makeText(this, "have got permission", Toast.LENGTH_LONG).show();
             testStorePath();
         } else {
-            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission", REQUEST_PERMISSION, prems);
+            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission",
+                    REQUEST_PERMISSION, prems);
         }
     }
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnTestNetSpeed:
+                TestNetSpeedActivity.launch(this);
+                break;
             case R.id.btnOnlyHttp:
                 OnlyOkHttpActivity.launch(this);
                 break;
@@ -151,7 +151,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
@@ -172,7 +173,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
         Log.d(TAG, "testStorePath: getFilesDir().getPath()=" + getFilesDir().getPath());
         Log.d(TAG, "testStorePath: getExternalCacheDir().getPath()=" + getExternalCacheDir().getPath());
         Log.d(TAG, "testStorePath: getExternalCacheDir()." +
-                "getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath()=" + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath());
+                "getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath()=" + getExternalFilesDir(
+                Environment.DIRECTORY_DOWNLOADS).getPath());
         if (Environment.isExternalStorageEmulated()) {
             Log.d(TAG, "testStorePath:getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath():"
                     + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
