@@ -109,6 +109,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnTestUpload:
+                UploadFileActivity.launch(this);
+                break;
             case R.id.btnTestNetSpeed:
                 TestNetSpeedActivity.launch(this);
                 break;

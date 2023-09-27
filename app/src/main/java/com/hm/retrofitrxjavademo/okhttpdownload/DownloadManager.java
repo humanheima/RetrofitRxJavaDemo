@@ -2,16 +2,8 @@ package com.hm.retrofitrxjavademo.okhttpdownload;
 
 import android.os.Environment;
 import android.util.Log;
-
 import com.hm.retrofitrxjavademo.App;
 import com.hm.retrofitrxjavademo.util.IOUtil;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -20,6 +12,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -123,7 +120,8 @@ public class DownloadManager {
                 fileNameAnother = fileName.substring(0, dotIndex)
                         + "(" + i + ")" + fileName.substring(dotIndex);
             }
-            File newFile = new File(App.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileNameAnother);
+            File newFile = new File(App.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    fileNameAnother);
             file = newFile;
             downloadLength = newFile.length();
             i++;
@@ -177,7 +175,9 @@ public class DownloadManager {
             Call call = mClient.newCall(request);
             downCalls.put(url, call);
             Response response = call.execute();
-            File file = new File(App.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), downloadInfo.getFileName());
+            File file = new File(App.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    downloadInfo.getFileName());
+            Log.i(TAG, "subscribe: file path = " + file.getPath());
             InputStream is;
             FileOutputStream fos;
             is = response.body().byteStream();
