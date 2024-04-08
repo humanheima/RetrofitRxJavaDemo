@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.View;
-
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityOnlyRetrofitBinding;
 import com.hm.retrofitrxjavademo.intercepter.HttpLoggingInterceptor;
@@ -13,14 +12,12 @@ import com.hm.retrofitrxjavademo.model.NowWeatherBean;
 import com.hm.retrofitrxjavademo.network.API;
 import com.hm.retrofitrxjavademo.network.GitHubService;
 import com.hm.retrofitrxjavademo.ui.base.BaseActivity;
-
-import java.io.IOException;
-import java.util.HashMap;
-
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import java.io.IOException;
+import java.util.HashMap;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -70,6 +67,7 @@ public class OnlyRetrofitActivity extends BaseActivity<ActivityOnlyRetrofitBindi
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.i(TAG, "onResponse: current thread = " + Thread.currentThread().getName());
                 ResponseBody responseBody = response.body();
                 if (responseBody != null) {
                     try {
@@ -85,6 +83,7 @@ public class OnlyRetrofitActivity extends BaseActivity<ActivityOnlyRetrofitBindi
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.i(TAG, "onResponse: current thread = " + Thread.currentThread().getName());
                 Log.d(TAG, "onFailure: " + t.getMessage());
             }
         });
