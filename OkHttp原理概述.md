@@ -26,6 +26,34 @@ OkHttp是一个高效的HTTP客户端，它的工作原理主要包括以下几�
 
 在你的代码中，`RealCall.java`文件就是OkHttp的核心部分之一，它实现了`Call`接口，负责创建和执行HTTP请求。在`getResponseWithInterceptorChain`方法中，你可以看到OkHttp是如何创建一个拦截器链，并使用这个链来处理请求和响应的。
 
+
+### OkHttp的拦截器 Interceptor
+
+
+OkHttp的拦截器（Interceptor）是一种强大的机制，可以监视、重写和重试调用。有两种类型的拦截器：
+
+1. **应用拦截器**：这些拦截器添加在OkHttpClient构建器中，通过`addInterceptor()`方法。它们在请求发出和响应返回的过程中都会被调用，即使请求在传输过程中出现问题。应用拦截器可以操作请求的最终内容（如自定义头部、查询参数等），也可以操作响应的最终内容（如解析、修改响应等）。
+
+2. **网络拦截器**：这些拦截器添加在OkHttpClient构建器中，通过`addNetworkInterceptor()`方法。它们在请求和响应被传输的过程中被调用。网络拦截器可以操作和查看数据（如重定向、重试、查看未压缩的响应体等）。
+
+以下是一些常见的OkHttp拦截器：
+
+- **LoggingInterceptor**：这是一个用于记录请求和响应信息的拦截器，可以帮助我们调试网络请求。
+
+- **RetryAndFollowUpInterceptor**：这是一个用于处理网络连接问题和其他恢复性问题的拦截器。
+
+- **BridgeInterceptor**：这是一个用于填充请求头或响应头的拦截器。
+
+- **CacheInterceptor**：这是一个用于读取缓存响应或更新缓存的拦截器。
+
+- **ConnectInterceptor**：这是一个用于建立网络连接的拦截器。
+
+- **CallServerInterceptor**：这是一个用于向服务器发送请求和接收响应的拦截器。
+
+以上就是OkHttp的拦截器及其主要功能。拦截器是OkHttp的核心组件之一，它可以让我们在请求和响应的过程中对数据进行处理，从而实现更加灵活和强大的功能。
+
+
+
 ### OkHttp的连接池 ConnectionPool
 
 OkHttp的`ConnectionPool`类是用于管理HTTP和HTTP/2连接的重用，以减少网络延迟。HTTP请求如果共享相同的`Address`，则可能共享一个`Connection`。这个类实现了决定哪些连接应该保持开启以供未来使用的策略。
