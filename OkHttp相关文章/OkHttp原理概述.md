@@ -36,6 +36,13 @@ OkHttp的拦截器（Interceptor）是一种强大的机制，可以监视、重
 
 2. **网络拦截器**：这些拦截器添加在OkHttpClient构建器中，通过`addNetworkInterceptor()`方法。它们在请求和响应被传输的过程中被调用。网络拦截器可以操作和查看数据（如重定向、重试、查看未压缩的响应体等）。
 
+作用范围：
+应用拦截器 Interceptor：可以处理所有请求和响应，包括从缓存中读取的。
+网络拦截器NetworkInterceptor：仅处理实际的网络请求和响应，不涉及缓存。
+
+使用场景：
+Interceptor：适合需要通用处理的场景，如日志、错误处理等。
+NetworkInterceptor：适合需要网络层特定处理的场景，如在请求发送前修改请求或在收到响应后处理。
 以下是一些常见的OkHttp拦截器：
 
 - **LoggingInterceptor**：这是一个用于记录请求和响应信息的拦截器，可以帮助我们调试网络请求。
