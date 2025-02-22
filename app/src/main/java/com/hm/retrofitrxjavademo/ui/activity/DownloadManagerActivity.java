@@ -10,11 +10,11 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import androidx.annotation.NonNull;
-import androidx.core.content.FileProvider;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityDownloadManagerBinding;
@@ -23,17 +23,13 @@ import com.hm.retrofitrxjavademo.util.ToastUtil;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import pub.devrel.easypermissions.AppSettingsDialog;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * 使用系统自带的DownloadManager下载
  */
-public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManagerBinding> implements EasyPermissions.PermissionCallbacks {
+public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManagerBinding> {
 
     private static final String TAG = "DownloadManagerActivity";
     public static final int WHAT_PROGRESS = -100;
@@ -49,7 +45,6 @@ public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManage
     private String downloadPath;
     private Timer timer;
     private MyHandler handler;
-
 
     public static void launch(Context context) {
         Intent starter = new Intent(context, DownloadManagerActivity.class);
@@ -72,11 +67,11 @@ public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManage
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_start:
-                if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
-                    startDownLoad();
-                } else {
-                    EasyPermissions.requestPermissions(this, getString(R.string.rationale), REQUEST_CODE, PERMISSIONS);
-                }
+//                if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
+//                    startDownLoad();
+//                } else {
+//                    EasyPermissions.requestPermissions(this, getString(R.string.rationale), REQUEST_CODE, PERMISSIONS);
+//                }
                 break;
             case R.id.btn_cancel:
                 cancelDownload();
@@ -181,32 +176,32 @@ public class DownloadManagerActivity extends BaseActivity<ActivityDownloadManage
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+        //EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
-    @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms) {
-        if (requestCode == REQUEST_CODE) {
-            if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
-                startDownLoad();
-            } else {
-                Toast.makeText(this, "没有相应的权限，无法进行下载", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
+//    @Override
+//    public void onPermissionsGranted(int requestCode, List<String> perms) {
+//        if (requestCode == REQUEST_CODE) {
+//            if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
+//                startDownLoad();
+//            } else {
+//                Toast.makeText(this, "没有相应的权限，无法进行下载", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
 
-    @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms) {
-        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            new AppSettingsDialog.Builder(this)
-                    .setRationale("下载需要读写权限")
-                    .setRequestCode(AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE)
-                    .setTitle("请求权限")
-                    .setPositiveButton("设置")
-                    .setNegativeButton("取消")
-                    .build().show();
-        }
-    }
+//    @Override
+//    public void onPermissionsDenied(int requestCode, List<String> perms) {
+//        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+//            new AppSettingsDialog.Builder(this)
+//                    .setRationale("下载需要读写权限")
+//                    .setRequestCode(AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE)
+//                    .setTitle("请求权限")
+//                    .setPositiveButton("设置")
+//                    .setNegativeButton("取消")
+//                    .build().show();
+//        }
+//    }
 
     @Override
     protected void onDestroy() {

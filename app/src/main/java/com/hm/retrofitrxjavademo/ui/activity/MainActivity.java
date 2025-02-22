@@ -1,12 +1,12 @@
 package com.hm.retrofitrxjavademo.ui.activity;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+
 import com.hm.retrofitrxjavademo.R;
 import com.hm.retrofitrxjavademo.databinding.ActivityMainBinding;
 import com.hm.retrofitrxjavademo.event.ExceptionEvent;
@@ -17,11 +17,10 @@ import com.hm.retrofitrxjavademo.util.RxBus1;
 import com.hm.retrofitrxjavademo.util.RxBus2;
 import com.hm.retrofitrxjavademo.util.RxBus3;
 import com.hm.retrofitrxjavademo.util.ToastUtil;
-import io.reactivex.functions.Consumer;
-import java.util.List;
-import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends BaseActivity<ActivityMainBinding> implements EasyPermissions.PermissionCallbacks {
+import io.reactivex.functions.Consumer;
+
+public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PERMISSION = 100;
@@ -97,14 +96,14 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
     }
 
     private void requestPermission() {
-        String[] prems = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE};
-        if (EasyPermissions.hasPermissions(this, prems)) {
-            Toast.makeText(this, "have got permission", Toast.LENGTH_LONG).show();
-            testStorePath();
-        } else {
-            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission",
-                    REQUEST_PERMISSION, prems);
-        }
+//        String[] prems = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE};
+//        if (EasyPermissions.hasPermissions(this, prems)) {
+//            Toast.makeText(this, "have got permission", Toast.LENGTH_LONG).show();
+//            testStorePath();
+//        } else {
+//            EasyPermissions.requestPermissions(MainActivity.this, "Request WRITE_EXTERNAL_STORAGE permission",
+//                    REQUEST_PERMISSION, prems);
+//        }
     }
 
     public void onClick(View view) {
@@ -158,21 +157,21 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // Forward results to EasyPermissions
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+        //EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
-    @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-        testStorePath();
-    }
-
-    @Override
-    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-
-    }
+//    @Override
+//    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+//        testStorePath();
+//    }
+//
+//    @Override
+//    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+//
+//    }
 
     private void testStorePath() {
         Log.d(TAG, "testStorePath: getFilesDir().getAbsolutePath()=" + getFilesDir().getAbsolutePath());
@@ -186,7 +185,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> implements E
                     + getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
         }
     }
-
 
 }
 

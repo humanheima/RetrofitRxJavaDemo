@@ -79,9 +79,12 @@ OkHttp的`ConnectionPool`类是用于管理HTTP和HTTP/2连接的重用，以减
 
 ### okhttp3 ConnectionPool 的工作原理
 
+默认最大空闲数是5，最大空闲时间是5分钟
+
 `okhttp3.ConnectionPool` 是 OkHttp 的连接池实现，它管理 HTTP 和 HTTP/2 连接的复用，以减少网络延迟。共享相同 `Address` 的 HTTP 请求可能会共享一个 `Connection`。此类实现了决定保持哪些连接开放以供将来使用的策略。
 
-以下是 `ConnectionPool` 的主要工作原理：
+以下是 `ConnectionPool` 的主要工作原理。连接复用条件： 相同主机和端口：连接必须指向相同的主机和端口。 协议匹配：连接的协议（如 HTTP/2 或 HTTP/1.1）必须与新请求的协议兼容。
+
 
 1. **连接复用**：`ConnectionPool` 管理着一个 `Deque<RealConnection>` 集合，这个集合保存了所有的连接。当需要一个连接时，会先从这个集合中查找是否有可复用的连接。如果有，则直接复用这个连接，否则创建新的连接。
 

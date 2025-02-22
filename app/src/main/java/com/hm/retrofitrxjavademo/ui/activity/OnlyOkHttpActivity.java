@@ -35,6 +35,7 @@ import okhttp3.ResponseBody;
  */
 public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> {
 
+    private static final String TAG = "OnlyOkHttpActivity";
     private OkHttpClient client;
 
     private HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -56,7 +57,7 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
         Looper.getMainLooper().setMessageLogging(new Printer() {
             @Override
             public void println(String x) {
-
+                Log.d(TAG, "println: x = " + x);
             }
         });
 
@@ -65,6 +66,7 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
                 //.addNetworkInterceptor(new LoggingInterceptor())
                 //.addInterceptor(interceptor)
                 .readTimeout(5000, TimeUnit.MILLISECONDS)
+                //.cache()
                 .writeTimeout(10000, TimeUnit.MILLISECONDS);
 
         if (BuildConfig.DEBUG) {
@@ -91,6 +93,16 @@ public class OnlyOkHttpActivity extends BaseActivity<ActivityOnlyOkHttpBinding> 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             Log.d(TAG, "onResponse: " + response.message());
+                            if (response.body() != null) {
+                                runOnUiThread(() -> {
+                                    try {
+                                        viewBind.tvResult.setText(response.body().string());
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+
+                                });
+                            }
                         }
                     });
                 }
