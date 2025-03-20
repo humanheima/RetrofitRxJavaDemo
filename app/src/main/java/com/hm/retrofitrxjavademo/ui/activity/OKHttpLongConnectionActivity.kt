@@ -102,6 +102,9 @@ class OKHttpLongConnectionActivity : AppCompatActivity() {
 
     private var retryCount = 0
 
+    /**
+     * 使用 OkHttp SSE 建立长连接。
+     */
     private fun useSse() {
         val request = Request.Builder()
             .url("https://api.example.com/sse-endpoint")
