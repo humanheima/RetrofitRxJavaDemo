@@ -113,7 +113,7 @@ class OKHttpLongConnectionActivity : AppCompatActivity() {
         //这样，就是已经建立连接了，newEventSource内部调用了 RealEventSource 的 connect(OkHttpClient client) 方法
 
         val createFactory = EventSources.createFactory(okHttpClient)
-        val eventResource = createFactory.newEventSource(request,
+        createFactory.newEventSource(request,
 
             object : EventSourceListener() {
 
