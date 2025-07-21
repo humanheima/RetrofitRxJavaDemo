@@ -59,6 +59,30 @@ NetworkInterceptor：适合需要网络层特定处理的场景，如在请求�
 
 以上就是OkHttp的拦截器及其主要功能。拦截器是OkHttp的核心组件之一，它可以让我们在请求和响应的过程中对数据进行处理，从而实现更加灵活和强大的功能。
 
+* 拦截器的顺序
+
+```java
+Response getResponseWithInterceptorChain() throws IOException {
+    // 构建一整套拦截器
+    List<Interceptor> interceptors = new ArrayList<>();
+    interceptors.addAll(client.interceptors());//1
+    interceptors.add(retryAndFollowUpInterceptor);//2
+    interceptors.add(new BridgeInterceptor(client.cookieJar()));//3
+    interceptors.add(new CacheInterceptor(client.internalCache()));//4
+    interceptors.add(new ConnectInterceptor(client));//5
+    //构建一个RealCall的时候我们传入的forWebSocket是false
+    if (!forWebSocket) {
+      interceptors.addAll(client.networkInterceptors());//6
+    }
+    interceptors.add(new CallServerInterceptor(forWebSocket));//7
+    //构建拦截器链
+    Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0,
+        originalRequest, this, eventListener, client.connectTimeoutMillis(),
+        client.readTimeoutMillis(), client.writeTimeoutMillis());
+    //拦截器链处理请求
+    return chain.proceed(originalRequest);
+  }
+```
 
 
 ### OkHttp的连接池 ConnectionPool
